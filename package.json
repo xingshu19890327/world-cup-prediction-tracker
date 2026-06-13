@@ -1,1 +1,21 @@
-{"scripts":{"dev":"vite --host 0.0.0.0","build":"tsc -p tsconfig.json --noEmit && node scripts/build.mjs","preview":"vite preview"},"dependencies":{"@vitejs/plugin-react":"latest","vite":"latest","react":"latest","react-dom":"latest","tailwindcss":"^3.4.17","postcss":"latest","autoprefixer":"latest"},"devDependencies":{"typescript":"latest","@types/react":"latest","@types/react-dom":"latest"}}
+{
+  "scripts": {
+    "dev": "vite --host 0.0.0.0",
+    "build": "tsc -p tsconfig.json --noEmit && vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "@vitejs/plugin-react": "latest",
+    "vite": "latest",
+    "react": "latest",
+    "react-dom": "latest",
+    "tailwindcss": "^3.4.17",
+    "postcss": "latest",
+    "autoprefixer": "latest"
+  },
+  "devDependencies": {
+    "typescript": "latest",
+    "@types/react": "latest",
+    "@types/react-dom": "latest"
+  }
+}
