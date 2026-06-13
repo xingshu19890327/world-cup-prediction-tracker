@@ -1,9 +1,11 @@
 import { seedMatches } from '../data/seedMatches';
 import type { ColumnPrefs, MatchInput, MatchPrediction, TrackerMeta } from '../types';
 import { recalculateMatch } from './score';
-const KEY='world-cup-prediction-tracker-v2'; const OLD='world-cup-prediction-tracker'; const META='world-cup-prediction-tracker-meta'; const PREF='world-cup-column-prefs'; const SNAP='world-cup-backup-snapshots';
-export const nowText=()=>new Date().toLocaleString('zh-CN',{hour12:false});
+const KEY='world-cup-tracker-v2',OLD='worldCupPredictions',META='world-cup-tracker-meta',PREF='world-cup-column-prefs',SNAP='world-cup-tracker-snapshots';
 const meta0:TrackerMeta={lastResultUpdate:'',lastOddsUpdate:'',lastImportTime:'',lastManualSave:''};
+export const TARGET_MATCH_COUNT = 104;
+export const hasIncompleteBaseSchedule=(matches:MatchPrediction[]):boolean=>matches.length<TARGET_MATCH_COUNT;
+export function nowText(){ return new Date().toLocaleString('zh-CN',{hour12:false}); }
 export function loadMatches():MatchPrediction[]{ try{const raw=localStorage.getItem(KEY)||localStorage.getItem(OLD); if(!raw) return seedMatches; const data=JSON.parse(raw); if(!Array.isArray(data)) throw new Error('bad'); return data.map((m:MatchInput)=>recalculateMatch(m));}catch{ return seedMatches; } }
 export function saveMatches(matches:MatchPrediction[]):void{ localStorage.setItem(KEY,JSON.stringify(matches)); }
 export function resetMatches():MatchPrediction[]{ saveMatches(seedMatches); return seedMatches; }
