@@ -1,0 +1,2 @@
+const tabs=[['#dashboard','总览 Dashboard'],['#table','预测对比表'],['#odds','赔率更新'],['#import','数据导入导出'],['#info','说明&来源']];
+export default function TopNav(){return <nav className="sticky top-0 z-40 mb-4 rounded-2xl border border-white/10 bg-slate-950/85 p-2 backdrop-blur"><div className="flex flex-wrap gap-2">{tabs.map(([href,label])=><a key={href} href={href} className="rounded-xl px-3 py-2 text-sm font-bold text-slate-200 hover:bg-cyan-400/15 hover:text-cyan-100">{label}</a>)}</div></nav>}
