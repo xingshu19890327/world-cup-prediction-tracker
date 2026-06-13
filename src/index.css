@@ -1,0 +1,4 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+:root{font-family:"Inter","Noto Sans SC",system-ui,sans-serif;background:#08111f;color:#e5e7eb}body{margin:0}.excel-input{width:100%;min-width:5rem;border:1px solid #334155;background:#0f172a;color:#e5e7eb;padding:.35rem;border-radius:.35rem}.odds-cell .excel-input{background:#3b320d}.actual-cell .excel-input{background:#0c344b}.sticky-th{position:sticky;top:0;z-index:20}.sticky-col{position:sticky;z-index:15}.modal-backdrop{background:rgba(2,6,23,.78)}
