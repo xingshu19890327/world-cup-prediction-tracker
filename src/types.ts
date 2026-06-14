@@ -3,6 +3,7 @@ export type WdlPrediction = WdlResult | 'TBD' | '';
 export type HitStatus = '✅' | '❌' | '待赛' | '';
 export type CompletionStatus = '未赛' | '已完赛' | 'TBD' | '比分格式错误';
 export type OddsStatus = '已更新' | '缺少赔率来源' | '抓取失败' | '部分赔率缺失' | '未更新';
+export type ResultUpdateStatus = '未更新' | '已更新' | '抓取失败' | '缺少赛果来源' | '未完赛' | '匹配失败';
 export type FocusLevel = '普通' | '重点' | '高风险' | '值得复盘';
 export type MatchPrediction = {
   id:string; matchNo:number; group:string; round:string; australiaTime:string; homeTeam:string; awayTeam:string; city:string;
@@ -16,7 +17,7 @@ export type MatchPrediction = {
   claudePredictedScore2:string; claudePredictedScore2Odds:number|''; claudePredictedScore2Hit:HitStatus;
   claudePredictedScore3:string; claudePredictedScore3Odds:number|''; claudePredictedScore3Hit:HitStatus; claudeAnyScoreHit:HitStatus; claudeCorrespondingSbWdlOdds:number|'';
   sbHomeOdds:number|''; sbDrawOdds:number|''; sbAwayOdds:number|'';
-  predictionDisagreement:string; highOddsTag:string; notes:string; preMatchNotes:string; postMatchReview:string; focusLevel:FocusLevel; oddsSource:string; oddsUpdateStatus:OddsStatus; oddsUpdatedAt:string;
+  predictionDisagreement:string; highOddsTag:string; notes:string; preMatchNotes:string; postMatchReview:string; focusLevel:FocusLevel; oddsSource:string; oddsUpdateStatus:OddsStatus; oddsUpdatedAt:string; resultSource:string; resultUpdatedAt:string; resultUpdateStatus:ResultUpdateStatus;
 };
 export type LegacyMatchInput = Partial<MatchPrediction> & Record<string, unknown>;
 export type MatchInput = LegacyMatchInput;
