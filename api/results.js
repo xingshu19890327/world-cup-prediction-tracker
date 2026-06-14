@@ -1,5 +1,5 @@
 const FOOTBALL_DATA_URL = 'https://api.football-data.org/v4/competitions/WC/matches?season=2026';
-const SOURCE_UNAVAILABLE_ERROR = 'football-data.org 暂未返回 2026 World Cup 已完赛数据。';
+const SOURCE_UNAVAILABLE_ERROR = 'football-data.org 暂未返回 2026 World Cup 赛程/赛果数据。';
 
 const teamName = (team = {}) => team.name || team.shortName || team.tla || '';
 
@@ -14,6 +14,7 @@ const fullTimeScore = (score = {}) => {
 
 const normalizeMatch = (match = {}) => {
   const score = fullTimeScore(match.score || {});
+  const status = match.status || '';
   return {
     id: match.id ?? match.matchId ?? null,
     matchNo: match.matchNo ?? match.matchNumber ?? match.gameNumber ?? match.number ?? null,
@@ -21,6 +22,9 @@ const normalizeMatch = (match = {}) => {
     homeTeam: teamName(match.homeTeam || match.home || {}),
     awayTeam: teamName(match.awayTeam || match.away || {}),
     utcDate: match.utcDate || match.date || match.kickoff || '',
+    status,
+    finished: status === 'FINISHED',
+    live: ['LIVE', 'IN_PLAY', 'PAUSED'].includes(status),
     actualScore: score ? `${score.home}-${score.away}` : ''
   };
 };
@@ -53,9 +57,8 @@ export default async function handler(req, res) {
     const data = await response.json();
     const allMatches = Array.isArray(data.matches) ? data.matches : [];
     const matches = allMatches
-      .filter((match) => match.status === 'FINISHED' && fullTimeScore(match.score || {}))
       .map(normalizeMatch)
-      .filter((match) => match.homeTeam && match.awayTeam && match.utcDate && match.actualScore);
+      .filter((match) => match.homeTeam && match.awayTeam && match.utcDate);
 
     if (!matches.length) {
       return res.status(200).json({ ok: false, code: 'source_unavailable', error: SOURCE_UNAVAILABLE_ERROR });
