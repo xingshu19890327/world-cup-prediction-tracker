@@ -1,5 +1,5 @@
 export type WdlResult = '主胜' | '平局' | '客胜';
-export type HitStatus = '✓' | '×' | '待赛' | '比分格式错误' | '';
+export type HitStatus = '✓' | '×' | '✅' | '❌' | '待赛' | '比分格式错误' | '';
 export type CompletionStatus = '未赛' | '已完赛' | '比分格式错误';
 export type FocusLevel = '普通' | '重点' | '高风险' | '值得复盘';
 
@@ -19,10 +19,10 @@ export type MatchPrediction = {
   claudePredictedScore2: string;
   claudePredictedScore3: string;
   claudeWdlPrediction: WdlResult | '';
-  claudeCorrespondingSbWdlOdds: string;
-  sbHomeOdds: string;
-  sbDrawOdds: string;
-  sbAwayOdds: string;
+  claudeCorrespondingSbWdlOdds: string | number;
+  sbHomeOdds: string | number;
+  sbDrawOdds: string | number;
+  sbAwayOdds: string | number;
   claudeAnyScoreHit: HitStatus;
   claudeWdlHit: HitStatus;
   chatgptWdlPrediction: string;
