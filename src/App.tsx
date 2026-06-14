@@ -26,7 +26,8 @@ export default function App(){
       const response = await fetch('/api/results');
       const payload = await response.json().catch(()=>({ message: '赛果数据源返回格式错误。' }));
       if(!response.ok) {
-        setMessage(payload.message || '赛果数据源失败：无法更新实际赛果。成功更新 0 场，已有比分跳过 0 场，匹配失败 0 场，数据源失败 1 场。');
+        const friendlyMissingToken = '未配置赛果 API token。当前无法自动更新实际赛果，你仍可以手动填写实际比分或导入 JSON。';
+        setMessage(payload.error === 'missing_token' ? friendlyMissingToken : payload.message || '赛果数据源失败：无法更新实际赛果。成功更新 0 场，已有比分跳过 0 场，匹配失败 0 场，数据源失败 1 场。');
         return;
       }
       const { rows, stats } = applyFootballDataResults(matches, Array.isArray(payload.matches) ? payload.matches : []);

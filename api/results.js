@@ -8,7 +8,7 @@ const send = (res, statusCode, body) => {
 
 module.exports = async function handler(req, res) {
   const token = process.env.FOOTBALL_DATA_TOKEN;
-  if (!token) return send(res, 500, { error: 'missing_token', message: '缺少 FOOTBALL_DATA_TOKEN，无法从 football-data.org 更新实际赛果。' });
+  if (!token) return send(res, 500, { error: 'missing_token', message: '未配置赛果 API token。当前无法自动更新实际赛果，你仍可以手动填写实际比分或导入 JSON。' });
 
   try {
     const response = await fetch(endpoint, {
