@@ -1,5 +1,6 @@
 {
   "scripts": {
+    "validate:seed": "node scripts/validate-seed.mjs",
     "dev": "vite --host 0.0.0.0",
     "build": "tsc -p tsconfig.json --noEmit && vite build",
     "preview": "vite preview"
