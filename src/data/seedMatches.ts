@@ -3349,7 +3349,7 @@ const rows: MatchInput[] = [
   {
     "matchNo": 89,
     "group": "",
-    "round": "1/16决赛",
+    "round": "1/8决赛",
     "australiaTime": "TBD",
     "homeTeam": "E组第2",
     "awayTeam": "F组第1",
@@ -3387,7 +3387,7 @@ const rows: MatchInput[] = [
   {
     "matchNo": 90,
     "group": "",
-    "round": "1/16决赛",
+    "round": "1/8决赛",
     "australiaTime": "TBD",
     "homeTeam": "F组第1",
     "awayTeam": "G组第2",
@@ -3425,7 +3425,7 @@ const rows: MatchInput[] = [
   {
     "matchNo": 91,
     "group": "",
-    "round": "1/16决赛",
+    "round": "1/8决赛",
     "australiaTime": "TBD",
     "homeTeam": "G组第2",
     "awayTeam": "H组第1",
@@ -3463,7 +3463,7 @@ const rows: MatchInput[] = [
   {
     "matchNo": 92,
     "group": "",
-    "round": "1/16决赛",
+    "round": "1/8决赛",
     "australiaTime": "TBD",
     "homeTeam": "H组第1",
     "awayTeam": "I组第2",
@@ -3501,7 +3501,7 @@ const rows: MatchInput[] = [
   {
     "matchNo": 93,
     "group": "",
-    "round": "1/16决赛",
+    "round": "1/8决赛",
     "australiaTime": "TBD",
     "homeTeam": "I组第2",
     "awayTeam": "J组第1",
@@ -3539,7 +3539,7 @@ const rows: MatchInput[] = [
   {
     "matchNo": 94,
     "group": "",
-    "round": "1/16决赛",
+    "round": "1/8决赛",
     "australiaTime": "TBD",
     "homeTeam": "J组第1",
     "awayTeam": "K组第2",
@@ -3577,7 +3577,7 @@ const rows: MatchInput[] = [
   {
     "matchNo": 95,
     "group": "",
-    "round": "1/16决赛",
+    "round": "1/8决赛",
     "australiaTime": "TBD",
     "homeTeam": "K组第2",
     "awayTeam": "L组第1",
@@ -3615,7 +3615,7 @@ const rows: MatchInput[] = [
   {
     "matchNo": 96,
     "group": "",
-    "round": "1/16决赛",
+    "round": "1/8决赛",
     "australiaTime": "TBD",
     "homeTeam": "L组第1",
     "awayTeam": "A组第2",
@@ -3653,7 +3653,7 @@ const rows: MatchInput[] = [
   {
     "matchNo": 97,
     "group": "",
-    "round": "1/8决赛",
+    "round": "1/4决赛",
     "australiaTime": "TBD",
     "homeTeam": "Match 73胜者",
     "awayTeam": "Match 74胜者",
@@ -3691,7 +3691,7 @@ const rows: MatchInput[] = [
   {
     "matchNo": 98,
     "group": "",
-    "round": "1/8决赛",
+    "round": "1/4决赛",
     "australiaTime": "TBD",
     "homeTeam": "Match 74胜者",
     "awayTeam": "Match 75胜者",
