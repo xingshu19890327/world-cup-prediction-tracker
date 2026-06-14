@@ -1,4 +1,5 @@
 const FOOTBALL_DATA_URL = 'https://api.football-data.org/v4/competitions/WC/matches?season=2026';
+const SOURCE_UNAVAILABLE_ERROR = 'football-data.org 暂未返回 2026 World Cup 赛果数据。';
 
 const pickTeamName = (team = {}) => team.name || team.shortName || team.tla || '';
 const pickScore = (score = {}) => {
@@ -37,18 +38,18 @@ export default async function handler(req, res) {
       return res.status(200).json({ ok: false, code: 'forbidden', error: 'football-data.org 当前不允许访问 World Cup 2026 数据，可能需要付费权限或数据尚未开放。' });
     }
     if (!response.ok) {
-      return res.status(200).json({ ok: false, code: 'source_unavailable', error: 'football-data.org 暂未返回 2026 World Cup 赛果数据。', details: `HTTP ${response.status}` });
+      return res.status(200).json({ ok: false, code: 'source_unavailable', error: SOURCE_UNAVAILABLE_ERROR, details: `HTTP ${response.status}` });
     }
     const payload = await response.json();
     const matches = Array.isArray(payload.matches) ? payload.matches : [];
     if (!matches.length) {
-      return res.status(200).json({ ok: false, code: 'source_unavailable', error: 'football-data.org 暂未返回 2026 World Cup 赛果数据。' });
+      return res.status(200).json({ ok: false, code: 'source_unavailable', error: SOURCE_UNAVAILABLE_ERROR });
     }
     const finishedMatches = matches
       .map(normalizeMatch)
       .filter((match) => match.status === 'FINISHED' && match.actualScore && match.homeTeam && match.awayTeam);
     return res.status(200).json({ ok: true, source: FOOTBALL_DATA_URL, fetchedAt: new Date().toISOString(), total: matches.length, finishedCount: finishedMatches.length, matches: finishedMatches });
   } catch (error) {
-    return res.status(200).json({ ok: false, code: 'source_unavailable', error: 'football-data.org 暂未返回 2026 World Cup 赛果数据。', details: error instanceof Error ? error.message : '未知错误' });
+    return res.status(200).json({ ok: false, code: 'source_unavailable', error: SOURCE_UNAVAILABLE_ERROR, details: error instanceof Error ? error.message : '未知错误' });
   }
 }

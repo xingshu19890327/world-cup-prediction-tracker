@@ -36,6 +36,8 @@
 
 `resultSource` 字段仍保留在表格、CSV/JSON 和详情弹窗中，便于以后记录单场官方来源 URL 或作为人工核对依据；当前自动更新优先使用 football-data.org API，不再使用 Sportsbet 或逐场网页抓取。Sportsbet 只作为赔率来源。
 
+本功能与 Sportsbet 赔率更新相互独立：实际赛果只走 football-data.org，赔率仍走原有 Sportsbet 更新流程。
+
 ## Sportsbet 赔率更新方式
 
 Sportsbet 赔率 **不是实时同步**，不会页面加载自动抓取，也没有后台轮询或定时刷新。

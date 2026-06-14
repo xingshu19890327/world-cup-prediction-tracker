@@ -38,6 +38,13 @@ type ApiResultMatch = {
   actualScore: string;
 };
 
+type ApiResultsResponse = {
+  ok?: boolean;
+  code?: string;
+  error?: string;
+  matches?: ApiResultMatch[];
+};
+
 const defaultFilters: FiltersState = {
   round: '全部',
   group: '全部',
@@ -238,7 +245,7 @@ export default function App() {
     let matchedFailed = 0;
     try {
       const response = await fetch('/api/results', { cache: 'no-store' });
-      const data = await response.json();
+      const data = await response.json() as ApiResultsResponse;
       if (!response.ok || !data.ok) {
         const status = data.code === 'missing_token' ? '缺少赛果来源' : '抓取失败';
         const next = matches.map((match) => ({ ...match, resultUpdateStatus: status as MatchPrediction['resultUpdateStatus'] }));
@@ -248,7 +255,7 @@ export default function App() {
         return;
       }
 
-      const finished = Array.isArray(data.matches) ? data.matches as ApiResultMatch[] : [];
+      const finished = Array.isArray(data.matches) ? data.matches : [];
       const at = nowText();
       const next = matches.map((match) => {
         const result = findFinishedResult(match, finished);
