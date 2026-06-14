@@ -1,18 +1,116 @@
-import type { CompletionStatus, HitStatus, MatchInput, MatchPrediction, WdlPrediction, WdlResult } from '../types';
-const blank=(v='')=>!v||v.trim().toUpperCase()==='TBD';
-const fw=(s:string)=>s.replace(/[０-９]/g,d=>String(d.charCodeAt(0)-0xff10)).replace(/[：]/g,':').replace(/[－—–]/g,'-');
-export function normalizeScore(score:string):string{ return fw(score??'').replace(/\s+/g,'').replace(':','-'); }
-export function parseScore(score:string):{homeGoals:number;awayGoals:number}|null{ const n=normalizeScore(score); if(blank(n)) return null; const m=n.match(/^(\d{1,2})-(\d{1,2})$/); return m?{homeGoals:+m[1],awayGoals:+m[2]}:null; }
-export function getResultFromScore(score:string):WdlResult|''{ const p=parseScore(score); return !p?'':p.homeGoals>p.awayGoals?'主胜':p.homeGoals===p.awayGoals?'平局':'客胜'; }
-export function getCompletionStatus(actualScore:string):CompletionStatus{ if(!actualScore||actualScore.trim()==='')return '未赛'; if(actualScore.trim().toUpperCase()==='TBD')return 'TBD'; return parseScore(actualScore)?'已完赛':'比分格式错误'; }
-export function checkWdlHit(actualScore:string,predictedWdl:WdlPrediction):HitStatus{ const actual=getResultFromScore(actualScore); if(!actual) return '待赛'; if(!predictedWdl||predictedWdl==='TBD') return '待赛'; return actual===predictedWdl?'✅':'❌'; }
-export function checkSingleScoreHit(actualScore:string,predictedScore:string):HitStatus{ if(!parseScore(actualScore)) return '待赛'; if(blank(predictedScore)) return '待赛'; const p=parseScore(predictedScore); if(!p) return ''; return normalizeScore(actualScore)===normalizeScore(predictedScore)?'✅':'❌'; }
-export function checkAnyScoreHit(actualScore:string,a:string,b:string,c:string):HitStatus{ if(!parseScore(actualScore)) return '待赛'; return [a,b,c].some(s=>parseScore(s)&&normalizeScore(s)===normalizeScore(actualScore))?'✅':'❌'; }
-export function getCorrespondingSbOdds(predictedWdl:WdlPrediction,sbHome:number|'',sbDraw:number|'',sbAway:number|''):number|''{ return predictedWdl==='主胜'?sbHome:predictedWdl==='平局'?sbDraw:predictedWdl==='客胜'?sbAway:''; }
-const num=(v:unknown):number|''=>v===''||v==null?'':Number.isFinite(Number(v))?Number(v):'';
-const str=(v:unknown,d='')=>typeof v==='string'?v:(v==null?d:String(v));
-const score=(v:unknown)=>blank(str(v))?str(v):normalizeScore(str(v));
-const high=(m:Partial<MatchPrediction>)=>[m.chatgptCorrespondingSbWdlOdds,m.claudeCorrespondingSbWdlOdds].some(v=>Number(v)>=3)||[m.chatgptPredictedScore1Odds,m.chatgptPredictedScore2Odds,m.chatgptPredictedScore3Odds,m.claudePredictedScore1Odds,m.claudePredictedScore2Odds,m.claudePredictedScore3Odds].some(v=>Number(v)>=8);
-export function recalculateMatch(input:MatchInput):MatchPrediction{ const i=input as Record<string,unknown>; const actualRaw=str(i.actualScore); const actualScore=parseScore(actualRaw)?normalizeScore(actualRaw):actualRaw; const chatWdl=(i.chatgptWdlPrediction ?? i.wdlPrediction ?? '') as WdlPrediction; const claudeWdl=(i.claudeWdlPrediction ?? '') as WdlPrediction; const base:Partial<MatchPrediction>={id:str(i.id)||crypto.randomUUID(),matchNo:Number(i.matchNo)||0,group:str(i.group),round:str(i.round),australiaTime:str(i.australiaTime),homeTeam:str(i.homeTeam),awayTeam:str(i.awayTeam),city:str(i.city),actualScore,actualResult:getResultFromScore(actualScore),completionStatus:getCompletionStatus(actualScore),chatgptWdlPrediction:chatWdl,claudeWdlPrediction:claudeWdl,chatgptPredictedScore1:score(i.chatgptPredictedScore1 ?? i.predictedScore1),chatgptPredictedScore1Odds:num(i.chatgptPredictedScore1Odds ?? i.predictedScore1Odds),chatgptPredictedScore2:score(i.chatgptPredictedScore2 ?? i.predictedScore2),chatgptPredictedScore2Odds:num(i.chatgptPredictedScore2Odds ?? i.predictedScore2Odds),chatgptPredictedScore3:score(i.chatgptPredictedScore3 ?? i.predictedScore3),chatgptPredictedScore3Odds:num(i.chatgptPredictedScore3Odds ?? i.predictedScore3Odds),claudePredictedScore1:score(i.claudePredictedScore1),claudePredictedScore1Odds:num(i.claudePredictedScore1Odds),claudePredictedScore2:score(i.claudePredictedScore2),claudePredictedScore2Odds:num(i.claudePredictedScore2Odds),claudePredictedScore3:score(i.claudePredictedScore3),claudePredictedScore3Odds:num(i.claudePredictedScore3Odds),sbHomeOdds:num(i.sbHomeOdds),sbDrawOdds:num(i.sbDrawOdds),sbAwayOdds:num(i.sbAwayOdds),notes:str(i.notes),preMatchNotes:str(i.preMatchNotes),postMatchReview:str(i.postMatchReview),focusLevel:(str(i.focusLevel,'普通')||'普通') as MatchPrediction['focusLevel'],oddsSource:str(i.oddsSource),oddsUpdateStatus:(str(i.oddsUpdateStatus)||str(i.oddsStatus)||'未更新') as MatchPrediction['oddsUpdateStatus'],oddsUpdatedAt:str(i.oddsUpdatedAt)||str(i.oddsLastUpdated),resultSource:str(i.resultSource),resultUpdatedAt:str(i.resultUpdatedAt),resultUpdateStatus:(str(i.resultUpdateStatus)||'未更新') as MatchPrediction['resultUpdateStatus']}; base.chatgptCorrespondingSbWdlOdds=num(i.chatgptCorrespondingSbWdlOdds ?? i.correspondingSbWdlOdds) || getCorrespondingSbOdds(chatWdl,base.sbHomeOdds!,base.sbDrawOdds!,base.sbAwayOdds!); base.claudeCorrespondingSbWdlOdds=num(i.claudeCorrespondingSbWdlOdds) || getCorrespondingSbOdds(claudeWdl,base.sbHomeOdds!,base.sbDrawOdds!,base.sbAwayOdds!); base.chatgptWdlHit=checkWdlHit(actualScore,chatWdl); base.claudeWdlHit=checkWdlHit(actualScore,claudeWdl); [1,2,3].forEach(n=>{(base as any)[`chatgptPredictedScore${n}Hit`]=checkSingleScoreHit(actualScore,(base as any)[`chatgptPredictedScore${n}`]);(base as any)[`claudePredictedScore${n}Hit`]=checkSingleScoreHit(actualScore,(base as any)[`claudePredictedScore${n}`]);}); base.chatgptAnyScoreHit=checkAnyScoreHit(actualScore,base.chatgptPredictedScore1!,base.chatgptPredictedScore2!,base.chatgptPredictedScore3!); base.claudeAnyScoreHit=checkAnyScoreHit(actualScore,base.claudePredictedScore1!,base.claudePredictedScore2!,base.claudePredictedScore3!); base.predictionDisagreement=chatWdl&&claudeWdl&&chatWdl!==claudeWdl?'预测分歧':''; base.highOddsTag=high(base)?'高赔率':''; return base as MatchPrediction; }
-export const scoreFormatError='比分格式不正确，请输入类似 2-1 或 2:1 的格式。';
-export function hasInvalidScore(value:string):boolean{ if(!value||value.trim().toUpperCase()==='TBD') return false; return !parseScore(value); }
+import type { MatchPrediction, WdlResult } from '../types';
+
+export const normalizeScore = (value: string) =>
+  value
+    .trim()
+    .replace(/[：]/g, ':')
+    .replace(/[－–—]/g, '-')
+    .replace(/[０-９]/g, (d) => String(d.charCodeAt(0) - 0xff10));
+
+export const parseScore = (value: string): { home: number; away: number } | null => {
+  const normalized = normalizeScore(value);
+  const match = normalized.match(/^(\d+)\s*[-:]\s*(\d+)$/);
+  if (!match) return null;
+  return { home: Number(match[1]), away: Number(match[2]) };
+};
+
+export const resultFromScore = (score: { home: number; away: number }): WdlResult => {
+  if (score.home > score.away) return '主胜';
+  if (score.home < score.away) return '客胜';
+  return '平局';
+};
+
+export const actualWinner = (m: MatchPrediction, result: WdlResult | '') => {
+  if (result === '主胜') return m.homeTeam;
+  if (result === '客胜') return m.awayTeam;
+  if (result === '平局') return '平局';
+  return '';
+};
+
+const scoreHit = (actual: string, predictions: string[]) =>
+  predictions.some((p) => normalizeScore(p) === normalizeScore(actual));
+
+const oddsHigh = (m: MatchPrediction) =>
+  [m.claudeCorrespondingSbWdlOdds, m.sbHomeOdds, m.sbDrawOdds, m.sbAwayOdds].some((v) => Number(v) >= 4);
+
+const predictionFromScore = (m: MatchPrediction, value: string) => {
+  const score = parseScore(value);
+  if (!score) return '';
+  if (score.home > score.away) return m.homeTeam;
+  if (score.home < score.away) return m.awayTeam;
+  return '平局';
+};
+
+export const normalizeChatGptPrediction = (m: MatchPrediction) => {
+  const value = m.chatgptWdlPrediction.trim();
+  if (!value || value === '平局' || value === m.homeTeam || value === m.awayTeam) return value;
+
+  const predictions = [
+    predictionFromScore(m, m.chatgptPredictedScore1),
+    predictionFromScore(m, m.chatgptPredictedScore2),
+    predictionFromScore(m, m.chatgptPredictedScore3),
+  ].filter(Boolean);
+
+  const majority = predictions.find((prediction) => predictions.filter((item) => item === prediction).length > predictions.length / 2);
+  return majority || predictions[0] || '';
+};
+
+const chatGptPredictionAsWdl = (m: MatchPrediction, prediction: string): WdlResult | '' => {
+  if (prediction === m.homeTeam) return '主胜';
+  if (prediction === m.awayTeam) return '客胜';
+  if (prediction === '平局') return '平局';
+  return '';
+};
+
+export const recalculateMatch = (m: MatchPrediction): MatchPrediction => {
+  const chatgptWdlPrediction = normalizeChatGptPrediction(m);
+  const normalized = { ...m, chatgptWdlPrediction };
+  const raw = normalized.actualScore.trim();
+  const chatGptWdl = chatGptPredictionAsWdl(normalized, chatgptWdlPrediction);
+
+  if (!raw) {
+    const disagreement = normalized.claudeWdlPrediction && chatGptWdl && normalized.claudeWdlPrediction !== chatGptWdl ? '分歧' : '';
+    return {
+      ...normalized,
+      actualResult: '',
+      chatgptActualWinner: '',
+      completionStatus: '未赛',
+      claudeAnyScoreHit: '待赛',
+      claudeWdlHit: '待赛',
+      chatgptAnyScoreHit: '待赛',
+      chatgptWdlHit: '待赛',
+      predictionDisagreement: disagreement,
+      highOddsTag: oddsHigh(normalized) ? '高赔率' : normalized.highOddsTag,
+    };
+  }
+
+  const score = parseScore(raw);
+  if (!score) {
+    return {
+      ...normalized,
+      actualResult: '',
+      completionStatus: '比分格式错误',
+      claudeAnyScoreHit: '比分格式错误',
+      claudeWdlHit: '比分格式错误',
+      chatgptAnyScoreHit: '比分格式错误',
+      chatgptWdlHit: '比分格式错误',
+    };
+  }
+
+  const actualResult = resultFromScore(score);
+  const winner = actualWinner(normalized, actualResult);
+  const chatgptHit = chatgptWdlPrediction === '平局' ? actualResult === '平局' : chatgptWdlPrediction === winner;
+
+  return {
+    ...normalized,
+    actualResult,
+    chatgptActualWinner: winner,
+    completionStatus: '已完赛',
+    claudeAnyScoreHit: scoreHit(raw, [normalized.claudePredictedScore1, normalized.claudePredictedScore2, normalized.claudePredictedScore3]) ? '✓' : '×',
+    claudeWdlHit: normalized.claudeWdlPrediction === actualResult ? '✓' : '×',
+    chatgptAnyScoreHit: scoreHit(raw, [normalized.chatgptPredictedScore1, normalized.chatgptPredictedScore2, normalized.chatgptPredictedScore3]) ? '✓' : '×',
+    chatgptWdlHit: chatgptHit ? '✓' : '×',
+    predictionDisagreement: normalized.claudeWdlPrediction && chatGptWdl && normalized.claudeWdlPrediction !== chatGptWdl ? '分歧' : '',
+    highOddsTag: oddsHigh(normalized) ? '高赔率' : normalized.highOddsTag,
+  };
+};
