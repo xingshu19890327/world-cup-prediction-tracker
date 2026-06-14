@@ -23,20 +23,13 @@
 
 如果浏览器里仍保存旧版少量数据，页面顶部会显示“当前本地数据少于104场，建议点击‘强制载入104场基础赛程’。”点击 **强制载入104场基础赛程** 后，系统会自动下载当前数据 JSON 备份、清除旧比赛数据、写入最新 104 场基础赛程，并提示“已载入104场基础赛程”。
 
-
 ## 实际赛果更新方式
 
-实际赛果 **不是实时同步**，不会页面加载自动抓取，也没有后台轮询或 `setInterval`。只有点击 **更新实际赛果** 时，前端才会调用 `/api/results` 从 football-data.org 尝试抓取一次 2026 World Cup 赛果。
+实际赛果 **不是实时同步**，不会页面加载自动抓取，也没有后台轮询或 `setInterval`。只有点击 **更新实际赛果** 时，前端才会调用 `/api/results` 从 football-data.org 尝试抓取一次 2026 World Cup 已完赛赛果。
 
-`/api/results` 使用 football-data.org 官方 API：`https://api.football-data.org/v4/competitions/WC/matches?season=2026`。部署到 Vercel 前，需要在项目环境变量中配置 `FOOTBALL_DATA_TOKEN`，服务端函数会用 `X-Auth-Token: process.env.FOOTBALL_DATA_TOKEN` 请求数据。
+`/api/results` 使用 football-data.org API：`https://api.football-data.org/v4/competitions/WC/matches?season=2026`。部署到 Vercel 前，需要在项目环境变量中配置 `FOOTBALL_DATA_TOKEN`，服务端函数会用 `X-Auth-Token: process.env.FOOTBALL_DATA_TOKEN` 和 `Accept: application/json` 请求数据。
 
-接口只返回 `status === "FINISHED"` 的比赛。前端只在高置信匹配时写入比分：优先使用 API 里的明确比赛信息，其次要求主队、客队名称可模糊匹配，并结合 `australiaTime` 的日期校验；不确定时不会写入 `actualScore`。
-
-如果缺少 `FOOTBALL_DATA_TOKEN`，接口返回 `code: "missing_token"` 并提示需要在 Vercel 配置 token；如果 football-data.org 返回 403，接口返回 `code: "forbidden"` 并说明 World Cup 2026 数据可能需要付费权限或尚未开放；如果没有 2026 World Cup 数据，接口返回 `code: "source_unavailable"`。这些失败都不会清空已有比分，用户仍可手动填写，或通过 JSON/CSV 导入实际比分作为 fallback。
-
-`resultSource` 字段仍保留在表格、CSV/JSON 和详情弹窗中，便于以后记录单场官方来源 URL 或作为人工核对依据；当前自动更新优先使用 football-data.org API，不再使用 Sportsbet 或逐场网页抓取。Sportsbet 只作为赔率来源。
-
-本功能与 Sportsbet 赔率更新相互独立：实际赛果只走 football-data.org，赔率仍走原有 Sportsbet 更新流程。
+如果 football-data.org 暂未开放 World Cup 2026 已完赛数据、token 缺失或权限不足，页面会显示中文错误，并保留已有实际比分。用户仍可手动填写实际比分，或通过 JSON/CSV 导入实际比分作为 fallback。
 
 ## Sportsbet 赔率更新方式
 
@@ -122,4 +115,3 @@ npm run build
 - 不提供投注建议或自动下注。
 - 不使用付费 API key。
 - 不实时刷新赔率、不后台轮询、不定时抓取。
-- 建议以 Excel/JSON 作为基准数据源，网站用于更新、筛选和复盘。

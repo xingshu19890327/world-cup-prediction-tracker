@@ -17,7 +17,7 @@ export type MatchPrediction = {
   claudePredictedScore2:string; claudePredictedScore2Odds:number|''; claudePredictedScore2Hit:HitStatus;
   claudePredictedScore3:string; claudePredictedScore3Odds:number|''; claudePredictedScore3Hit:HitStatus; claudeAnyScoreHit:HitStatus; claudeCorrespondingSbWdlOdds:number|'';
   sbHomeOdds:number|''; sbDrawOdds:number|''; sbAwayOdds:number|'';
-  predictionDisagreement:string; highOddsTag:string; notes:string; preMatchNotes:string; postMatchReview:string; focusLevel:FocusLevel; oddsSource:string; oddsUpdateStatus:OddsStatus; oddsUpdatedAt:string; resultSource:string; resultUpdatedAt:string; resultUpdateStatus:ResultUpdateStatus;
+  predictionDisagreement:string; highOddsTag:string; notes:string; preMatchNotes:string; postMatchReview:string; focusLevel:FocusLevel; oddsSource:string; oddsUpdateStatus:OddsStatus; oddsUpdatedAt:string; resultSource?:string; resultUpdatedAt?:string; resultUpdateStatus?:ResultUpdateStatus;
 };
 export type LegacyMatchInput = Partial<MatchPrediction> & Record<string, unknown>;
 export type MatchInput = LegacyMatchInput;
@@ -26,6 +26,6 @@ export const groups = ['', ...'ABCDEFGHIJKL'.split('')];
 export const focusLevels: FocusLevel[] = ['普通','重点','高风险','值得复盘'];
 export type SortKey = 'matchNo'|'australiaTime'|'round'|'completionStatus'|'chatgptWdlHit'|'claudeWdlHit'|'predictionDisagreement'|'highOddsTag'|'oddsMissing';
 export type QuickFilter = '全部'|'已完赛'|'未赛'|'ChatGPT赛果命中'|'Claude赛果命中'|'ChatGPT比分命中'|'Claude比分命中'|'双方都错'|'双方预测分歧'|'赔率缺失'|'高赔率';
-export type FiltersState = { round:string; group:string; team:string; city:string; completion:'全部'|'已完成'|'待赛'; hit:'全部'|'比分命中'|'比分未中'|'赛果命中'|'赛果未中'; sort:SortKey; quick:QuickFilter; showKnockoutPlaceholders:boolean };
+export type FiltersState = { round:string; group:string; team:string; city:string; completion:'全部'|'已完成'|'待赛'; hit:'全部'|'比分命中'|'比分未中'|'赛果命中'|'赛果未中'; sort:SortKey; quick:QuickFilter };
 export type TrackerMeta = { lastResultUpdate:string; lastOddsUpdate:string; lastImportTime:string; lastManualSave:string };
 export type ColumnPrefs = Record<string, boolean>;
