@@ -6,7 +6,7 @@ import { applyFootballDataResults } from './utils/results';
 import TopNav from './components/TopNav';
 import DashboardCards from './components/DashboardCards';
 import Filters from './components/Filters';
-import ImportExportPanel from './components/ImportExportPanel';
+import ImportExportPanel, { DataManagementPanel } from './components/ImportExportPanel';
 import MatchTable from './components/MatchTable';
 import MatchEditor from './components/MatchEditor';
 import InfoPanel from './components/InfoPanel';
@@ -66,5 +66,52 @@ export default function App(){
     }
     return true;
   }),[matches,filters]);
-  return <main><div className="shell"><TopNav/><DashboardCards matches={matches}/>{message&&<div className="msg">{message}</div>}<ImportExportPanel matches={matches} onRecalc={()=>setAndSave(matches.map(recalculateMatch))} onUpdateResults={updateActualResults} updatingResults={updatingResults} lastResultsUpdate={lastResultsUpdate} onReset={()=>{if(confirm('确定重新载入 Excel 基准数据？当前本地修改会被覆盖，建议先导出 JSON。')) setAndSave(resetMatches())}} onImport={(text)=>{try{setAndSave(importMatches(text))}catch{setMessage('导入失败：JSON 格式错误。')}}}/><Filters filters={filters} setFilters={setFilters} visibleCount={visible.length} totalCount={matches.length} groups={groups} rounds={rounds} onClearAll={()=>setFilters(defaultFilters)}/><MatchTable matches={visible} onOpen={setEditing}/><InfoPanel/><MatchEditor match={editing} onChange={setEditing} onClose={()=>setEditing(null)} onSave={()=>{if(editing) { setAndSave(matches.map(m=>m.id===editing.id?recalculateMatch(editing):m)); setEditing(null); }}}/></div></main>;
+  return <main>
+    <div className="shell">
+      <TopNav/>
+      <DashboardCards matches={matches}/>
+      {message && <div className="msg">{message}</div>}
+      <ImportExportPanel
+        onRecalc={() => setAndSave(matches.map(recalculateMatch))}
+        onUpdateResults={updateActualResults}
+        updatingResults={updatingResults}
+        lastResultsUpdate={lastResultsUpdate}
+      />
+      <Filters
+        filters={filters}
+        setFilters={setFilters}
+        visibleCount={visible.length}
+        totalCount={matches.length}
+        groups={groups}
+        rounds={rounds}
+        onClearAll={() => setFilters(defaultFilters)}
+      />
+      <MatchTable matches={visible} onOpen={setEditing}/>
+      <InfoPanel/>
+      <DataManagementPanel
+        matches={matches}
+        onReset={() => {
+          if (confirm('确定重新载入 Excel 基准数据？当前本地修改会被覆盖，建议先导出 JSON。')) setAndSave(resetMatches());
+        }}
+        onImport={(text) => {
+          try {
+            setAndSave(importMatches(text));
+          } catch {
+            setMessage('导入失败：JSON 格式错误。');
+          }
+        }}
+      />
+      <MatchEditor
+        match={editing}
+        onChange={setEditing}
+        onClose={() => setEditing(null)}
+        onSave={() => {
+          if (editing) {
+            setAndSave(matches.map((match) => match.id === editing.id ? recalculateMatch(editing) : match));
+            setEditing(null);
+          }
+        }}
+      />
+    </div>
+  </main>;
 }

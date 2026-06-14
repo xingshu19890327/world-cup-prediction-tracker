@@ -41,6 +41,14 @@ export type MatchPrediction = {
   focusLevel: FocusLevel;
 };
 
+
+export type TableLayoutState = {
+  columnWidths: Record<string, number>;
+  columnOrder: (keyof MatchPrediction)[];
+  hiddenColumns: (keyof MatchPrediction)[];
+  frozenColumns: number;
+};
+
 export type FiltersState = {
   round: string;
   group: string;
