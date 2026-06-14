@@ -17,7 +17,7 @@ export type MatchPrediction = {
   claudePredictedScore2:string; claudePredictedScore2Odds:number|''; claudePredictedScore2Hit:HitStatus;
   claudePredictedScore3:string; claudePredictedScore3Odds:number|''; claudePredictedScore3Hit:HitStatus; claudeAnyScoreHit:HitStatus; claudeCorrespondingSbWdlOdds:number|'';
   sbHomeOdds:number|''; sbDrawOdds:number|''; sbAwayOdds:number|'';
-  predictionDisagreement:string; highOddsTag:string; notes:string; preMatchNotes:string; postMatchReview:string; focusLevel:FocusLevel; oddsSource:string; oddsUpdateStatus:OddsStatus; oddsUpdatedAt:string; resultSource:string; resultUpdatedAt:string; resultUpdateStatus:ResultUpdateStatus;
+  predictionDisagreement:string; highOddsTag:string; notes:string; preMatchNotes:string; postMatchReview:string; focusLevel:FocusLevel; oddsSource:string; oddsUpdateStatus:OddsStatus; oddsUpdatedAt:string; resultSource?:string; resultUpdatedAt?:string; resultUpdateStatus?:ResultUpdateStatus;
 };
 export type LegacyMatchInput = Partial<MatchPrediction> & Record<string, unknown>;
 export type MatchInput = LegacyMatchInput;

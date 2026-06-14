@@ -23,14 +23,13 @@
 
 如果浏览器里仍保存旧版少量数据，页面顶部会显示“当前本地数据少于104场，建议点击‘强制载入104场基础赛程’。”点击 **强制载入104场基础赛程** 后，系统会自动下载当前数据 JSON 备份、清除旧比赛数据、写入最新 104 场基础赛程，并提示“已载入104场基础赛程”。
 
-
 ## 实际赛果更新方式
 
-实际赛果 **不是实时同步**，不会页面加载自动抓取，也没有后台轮询或 `setInterval`。只有点击 **更新实际赛果** 时，前端才会逐场读取 `resultSource` 并调用 `/api/results?url=...` 尝试抓取一次。
+实际赛果 **不是实时同步**，不会页面加载自动抓取，也没有后台轮询或 `setInterval`。只有点击 **更新实际赛果** 时，前端才会调用 `/api/results` 从 football-data.org 尝试抓取一次 2026 World Cup 已完赛赛果。
 
-`resultSource` 应填写可靠赛果页 URL，例如 FIFA、Sky Sports、ESPN 或其他官方/权威赛程结果页；不要填写 Sportsbet，Sportsbet 只作为赔率来源。接口会抓取该页面并尝试从 JSON-LD、JSON 或页面文本中解析完场比分。
+`/api/results` 使用 football-data.org API：`https://api.football-data.org/v4/competitions/WC/matches?season=2026`。部署到 Vercel 前，需要在项目环境变量中配置 `FOOTBALL_DATA_TOKEN`，服务端函数会用 `X-Auth-Token: process.env.FOOTBALL_DATA_TOKEN` 和 `Accept: application/json` 请求数据。
 
-如果比赛没有配置 `resultSource`，页面会明确提示“尚未配置实际赛果来源，请先为比赛填写 resultSource，或通过 JSON/CSV 导入实际比分。”系统只在高置信匹配时写入比分；不确定、未完赛或抓取失败时会保留已有比分，并把 `resultUpdateStatus` 标记为“缺少赛果来源 / 未完赛 / 匹配失败 / 抓取失败”。
+如果 football-data.org 暂未开放 World Cup 2026 已完赛数据、token 缺失或权限不足，页面会显示中文错误，并保留已有实际比分。用户仍可手动填写实际比分，或通过 JSON/CSV 导入实际比分作为 fallback。
 
 ## Sportsbet 赔率更新方式
 
