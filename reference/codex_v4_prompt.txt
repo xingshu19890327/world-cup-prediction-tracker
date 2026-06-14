@@ -1,0 +1,128 @@
+请在当前 world-cup-prediction-tracker 最新 main 分支基础上，重新做一版干净的 V4 网站。
+
+我无法直接上传 Excel，所以我已经把 Excel 转成了参考数据文件：
+- reference/seedMatches.from_excel.json
+或
+- src/data/seedMatches.ts
+
+请以这个转换后的数据为唯一参考源，不要自己猜字段，不要自己生成无意义 TBD，不要基于旧 PR，不要解决旧 PR conflict。
+
+核心目标：
+做一个像 Excel tracker 的网页：
+“2026 世界杯 ChatGPT vs Claude 预测对比 Tracker”
+
+本轮不要做：
+- 不要 football-data.org
+- 不要自动抓实际比分
+- 不要自动抓 Sportsbet 赔率
+- 不要 serverless API
+- 不要后台轮询
+- 不要登录/数据库
+- 不要自己编比分或赔率
+
+请先做核心功能：
+1. 用 reference/seedMatches.from_excel.json 或 src/data/seedMatches.ts 作为 seedMatches。
+2. 主表分三大区：左侧基础内容 / 中间 Claude 区 / 右侧 ChatGPT 区。
+3. 表格默认阅读模式，像 Excel，不要每格都是厚重 input。
+4. 点击行打开编辑器，可修改实际比分、预测、赔率、备注。
+5. 保存到 localStorage。
+6. 支持导入 JSON、导出 JSON、一键备份 JSON、导出 CSV。
+7. 点击“更新结果 / 重新计算”后自动计算实际胜负、完赛状态、Claude/ChatGPT 比分命中和赛果命中。
+8. 支持筛选：轮次、组、完赛状态、命中状态、球队搜索、城市搜索、快捷筛选。
+9. 必须有“清空全部筛选”，并且真的清空所有筛选。
+10. 表头 sticky；左侧关键列 sticky：场次、轮次、主队、客队。
+11. Dashboard 显示当前记录数、已完赛场次、Claude/ChatGPT 赛果和比分命中率、当前领先。
+
+字段顺序：
+基础内容区：
+1. 场次
+2. 组
+3. 轮次
+4. 澳洲时间(AEST)
+5. 主队
+6. 客队
+7. 城市
+8. 实际比分★
+9. 实际胜负(自动)
+10. 完赛状态
+
+Claude 区：
+11. Claude比分预测1
+12. Claude比分预测2
+13. Claude比分预测3
+14. Claude胜平负预测
+15. Claude对应SB胜平负赔率
+16. SB主胜
+17. SB平局
+18. SB客胜
+19. Claude比分命中?
+20. Claude赛果命中?
+
+ChatGPT 区：
+21. ChatGPT预测胜负
+22. ChatGPT实际胜方(自动)
+23. ChatGPT赛果命中?
+24. ChatGPT比分命中?
+25. ChatGPT比分预测1
+26. ChatGPT比分预测2
+27. ChatGPT比分预测3
+
+补充区：
+28. 预测分歧
+29. 高赔率标签
+30. 备注
+31. 赔率来源
+32. 赛前备注
+33. 赛后复盘
+34. 关注级别
+
+计算要求：
+- 支持比分格式 2-1、2:1、２－１、前后空格。
+- 实际比分为空显示待赛。
+- 比分格式错误显示“比分格式错误”，不要白屏。
+- Claude比分命中：实际比分等于 Claude 三个比分预测任意一个。
+- Claude赛果命中：实际胜负等于 Claude胜平负预测。
+- ChatGPT比分命中：实际比分等于 ChatGPT 三个比分预测任意一个。
+- ChatGPT赛果命中：如果 ChatGPT 预测是球队名，和实际胜方球队名比较；如果是平局，和实际结果平局比较。
+
+视觉要求：
+- 深色 dashboard
+- Claude 区紫色系
+- ChatGPT 区蓝色系
+- Sportsbet 赔率金色系
+- 实际比分/实际胜负蓝绿系
+- 字体 12px 或 13px，行高紧凑
+- 长 URL 显示为“打开来源”，不要撑爆表格
+
+文件结构：
+请保持文件可读，不要压成一行。
+建议：
+- src/App.tsx
+- src/types.ts
+- src/data/seedMatches.ts
+- src/utils/score.ts
+- src/utils/storage.ts
+- src/utils/csv.ts
+- src/components/DashboardCards.tsx
+- src/components/Filters.tsx
+- src/components/ImportExportPanel.tsx
+- src/components/MatchTable.tsx
+- src/components/MatchEditor.tsx
+- src/components/TopNav.tsx
+- src/components/InfoPanel.tsx
+- src/index.css
+- README.md
+- scripts/validate-seed.mjs
+
+完成后运行：
+npm run validate:seed
+npm run build
+
+PR summary 必须说明：
+1. 这是 V4 clean rebuild。
+2. 使用转换后的 Excel 数据作为主数据源。
+3. 表格已分成基础内容区 / Claude 区 / ChatGPT 区。
+4. 表格是 Excel 阅读模式。
+5. 筛选和清空筛选如何实现。
+6. validate:seed 是否成功。
+7. build 是否成功。
