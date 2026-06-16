@@ -12,7 +12,7 @@ export const defaultTableLayout: TableLayoutState = {
   columnWidths: {},
   columnOrder: [],
   hiddenColumns: ['oddsSource'],
-  frozenColumns: 4,
+  frozenColumns: 10,
 };
 
 export const loadMatches = () => {
