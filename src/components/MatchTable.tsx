@@ -2,31 +2,31 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import type { ColumnFiltersState, MatchPrediction } from '../types';
 import { clearTableLayout, loadTableLayout, saveTableLayout } from '../utils/storage';
 
-export type TableColumn = { key: keyof MatchPrediction; label: string; group: string; defaultWidth: number; minWidth?: number; maxWidth?: number; lowFrequency?: boolean };
+export type TableColumn = { key: keyof MatchPrediction; label: string; fullLabel?: string; group: string; defaultWidth: number; minWidth?: number; maxWidth?: number; lowFrequency?: boolean };
 
 const columns: TableColumn[] = [
-  { key: 'chatgptWdlPrediction', label: 'ChatGPT胜平负主推', group: 'gpt', defaultWidth: 118, minWidth: 105, maxWidth: 145 },
-  { key: 'chatgptPredictedScore1', label: 'ChatGPT比分1', group: 'gpt', defaultWidth: 84, minWidth: 74, maxWidth: 105 },
-  { key: 'chatgptPredictedScore2', label: 'ChatGPT比分2', group: 'gpt', defaultWidth: 84, minWidth: 74, maxWidth: 105 },
-  { key: 'chatgptPredictedScore3', label: 'ChatGPT比分3', group: 'gpt', defaultWidth: 84, minWidth: 74, maxWidth: 105 },
-  { key: 'chatgptWdlHit', label: 'ChatGPT赛果命中', group: 'gpt', defaultWidth: 92, minWidth: 82, maxWidth: 112 },
-  { key: 'chatgptAnyScoreHit', label: 'ChatGPT比分命中', group: 'gpt', defaultWidth: 92, minWidth: 82, maxWidth: 112 },
-  { key: 'matchNo', label: '场次', group: 'base', defaultWidth: 54, minWidth: 50, maxWidth: 62 },
-  { key: 'round', label: '轮次', group: 'base', defaultWidth: 82, minWidth: 66, maxWidth: 115 },
-  { key: 'homeTeam', label: '主队', group: 'base', defaultWidth: 112, minWidth: 95, maxWidth: 140 },
-  { key: 'awayTeam', label: '客队', group: 'base', defaultWidth: 112, minWidth: 95, maxWidth: 140 },
-  { key: 'australiaTime', label: '澳洲时间(AEST)', group: 'base', defaultWidth: 158, minWidth: 145, maxWidth: 180 },
-  { key: 'group', label: '组', group: 'base', defaultWidth: 50, minWidth: 45, maxWidth: 58 },
-  { key: 'city', label: '城市', group: 'base', defaultWidth: 118, minWidth: 100, maxWidth: 150 },
-  { key: 'actualScore', label: '实际比分', group: 'actual', defaultWidth: 82, minWidth: 70, maxWidth: 96 },
-  { key: 'actualResult', label: '实际赛果', group: 'actual', defaultWidth: 82, minWidth: 74, maxWidth: 98 },
-  { key: 'completionStatus', label: '状态', group: 'actual', defaultWidth: 78, minWidth: 70, maxWidth: 90 },
-  { key: 'claudeWdlPrediction', label: 'Claude胜平负主推', group: 'claude', defaultWidth: 116, minWidth: 105, maxWidth: 145 },
-  { key: 'claudePredictedScore1', label: 'Claude比分1', group: 'claude', defaultWidth: 82, minWidth: 72, maxWidth: 104 },
-  { key: 'claudePredictedScore2', label: 'Claude比分2', group: 'claude', defaultWidth: 82, minWidth: 72, maxWidth: 104 },
-  { key: 'claudePredictedScore3', label: 'Claude比分3', group: 'claude', defaultWidth: 82, minWidth: 72, maxWidth: 104 },
-  { key: 'claudeWdlHit', label: 'Claude赛果命中', group: 'claude', defaultWidth: 90, minWidth: 80, maxWidth: 110 },
-  { key: 'claudeAnyScoreHit', label: 'Claude比分命中', group: 'claude', defaultWidth: 90, minWidth: 80, maxWidth: 110 },
+  { key: 'chatgptWdlPrediction', label: '主推', fullLabel: 'ChatGPT胜平负主推', group: 'gpt', defaultWidth: 70, minWidth: 62, maxWidth: 105 },
+  { key: 'chatgptPredictedScore1', label: '比分1', fullLabel: 'ChatGPT比分1', group: 'gpt', defaultWidth: 65, minWidth: 58, maxWidth: 88 },
+  { key: 'chatgptPredictedScore2', label: '比分2', fullLabel: 'ChatGPT比分2', group: 'gpt', defaultWidth: 65, minWidth: 58, maxWidth: 88 },
+  { key: 'chatgptPredictedScore3', label: '比分3', fullLabel: 'ChatGPT比分3', group: 'gpt', defaultWidth: 65, minWidth: 58, maxWidth: 88 },
+  { key: 'chatgptWdlHit', label: '赛果中', fullLabel: 'ChatGPT赛果命中', group: 'gpt', defaultWidth: 72, minWidth: 64, maxWidth: 92 },
+  { key: 'chatgptAnyScoreHit', label: '比分中', fullLabel: 'ChatGPT比分命中', group: 'gpt', defaultWidth: 72, minWidth: 64, maxWidth: 92 },
+  { key: 'matchNo', label: '场次', group: 'base', defaultWidth: 48, minWidth: 44, maxWidth: 58 },
+  { key: 'round', label: '轮次', group: 'base', defaultWidth: 70, minWidth: 62, maxWidth: 100 },
+  { key: 'homeTeam', label: '主队', group: 'base', defaultWidth: 95, minWidth: 82, maxWidth: 128 },
+  { key: 'awayTeam', label: '客队', group: 'base', defaultWidth: 95, minWidth: 82, maxWidth: 128 },
+  { key: 'australiaTime', label: '澳洲时间(AEST)', group: 'base', defaultWidth: 135, minWidth: 120, maxWidth: 165 },
+  { key: 'group', label: '组', group: 'base', defaultWidth: 42, minWidth: 38, maxWidth: 52 },
+  { key: 'city', label: '城市', group: 'base', defaultWidth: 95, minWidth: 82, maxWidth: 128 },
+  { key: 'actualScore', label: '比分', fullLabel: '实际比分', group: 'actual', defaultWidth: 65, minWidth: 58, maxWidth: 86 },
+  { key: 'actualResult', label: '赛果', fullLabel: '实际赛果', group: 'actual', defaultWidth: 70, minWidth: 62, maxWidth: 92 },
+  { key: 'completionStatus', label: '状态', group: 'actual', defaultWidth: 68, minWidth: 60, maxWidth: 84 },
+  { key: 'claudeWdlPrediction', label: '主推', fullLabel: 'Claude胜平负主推', group: 'claude', defaultWidth: 70, minWidth: 62, maxWidth: 105 },
+  { key: 'claudePredictedScore1', label: '比分1', fullLabel: 'Claude比分1', group: 'claude', defaultWidth: 65, minWidth: 58, maxWidth: 88 },
+  { key: 'claudePredictedScore2', label: '比分2', fullLabel: 'Claude比分2', group: 'claude', defaultWidth: 65, minWidth: 58, maxWidth: 88 },
+  { key: 'claudePredictedScore3', label: '比分3', fullLabel: 'Claude比分3', group: 'claude', defaultWidth: 65, minWidth: 58, maxWidth: 88 },
+  { key: 'claudeWdlHit', label: '赛果中', fullLabel: 'Claude赛果命中', group: 'claude', defaultWidth: 72, minWidth: 64, maxWidth: 92 },
+  { key: 'claudeAnyScoreHit', label: '比分中', fullLabel: 'Claude比分命中', group: 'claude', defaultWidth: 72, minWidth: 64, maxWidth: 92 },
   { key: 'chatgptActualWinner', label: '实际胜方', group: 'actual', defaultWidth: 110 },
   { key: 'predictionDisagreement', label: '预测分歧', group: 'extra', defaultWidth: 82 },
   { key: 'notes', label: '备注', group: 'extra', defaultWidth: 140, lowFrequency: true },
@@ -40,6 +40,7 @@ const defaultOrder = columns.map((column) => column.key);
 const columnByKey = new Map(columns.map((column) => [column.key, column]));
 const clampWidth = (column: TableColumn, width: number) => Math.max(column.minWidth ?? 56, Math.min(column.maxWidth ?? 220, width));
 const labelFor = (column: TableColumn, labels: Record<string, string>) => labels[column.key] || column.label;
+const titleFor = (column: TableColumn, labels: Record<string, string>) => labels[column.key] || column.fullLabel || column.label;
 const filterableKeys = new Set<keyof MatchPrediction>([
   'chatgptWdlPrediction','chatgptPredictedScore1','chatgptPredictedScore2','chatgptPredictedScore3','chatgptWdlHit','chatgptAnyScoreHit',
   'matchNo','round','homeTeam','awayTeam','australiaTime','group','city','actualScore','actualResult','completionStatus',
@@ -114,11 +115,10 @@ export default function MatchTable({ matches, allMatches, columnFilters, onColum
   const calculateAutoWidths = (sourceColumns = orderedColumns, sourceMatches = matches) => {
     const sampleRows = sourceMatches.slice(0, 40);
     return sourceColumns.reduce<Record<string, number>>((widths, column) => {
-      const title = labelFor(column, layout.columnLabels);
-      const values = [title, ...sampleRows.map((match) => String(match[column.key] ?? ''))];
+      const values = sampleRows.map((match) => String(match[column.key] ?? ''));
       const longest = values.reduce((max, value) => Math.max(max, [...value].reduce((sum, char) => sum + (char.charCodeAt(0) > 255 ? 12 : 7), 0)), 0);
       const filterSpace = filterableKeys.has(column.key) ? 24 : 10;
-      widths[column.key] = clampWidth(column, Math.ceil(longest + filterSpace + 18));
+      widths[column.key] = clampWidth(column, Math.max(column.defaultWidth, Math.ceil(longest + filterSpace + 18)));
       return widths;
     }, {});
   };
@@ -236,6 +236,7 @@ export default function MatchTable({ matches, allMatches, columnFilters, onColum
               const frozen = index < layout.frozenColumns;
               const width = widthForColumn(column);
               const label = labelFor(column, layout.columnLabels);
+              const title = titleFor(column, layout.columnLabels);
               const style = frozen ? { left: leftOffsets[index], width, minWidth: width } : { width, minWidth: width };
               return <th
                 key={column.key}
@@ -259,16 +260,16 @@ export default function MatchTable({ matches, allMatches, columnFilters, onColum
                   }}
                   onClick={(event) => event.stopPropagation()}
                   onMouseDown={(event) => event.stopPropagation()}
-                /> : <span className="headerLabel" title={label} onDoubleClick={(event) => { event.preventDefault(); event.stopPropagation(); startHeaderEdit(column); }}>{label}</span>}{filterableKeys.has(column.key) && <button
+                /> : <span className="headerLabel" title={title} onDoubleClick={(event) => { event.preventDefault(); event.stopPropagation(); startHeaderEdit(column); }}>{label}</span>}{filterableKeys.has(column.key) && <button
                   type="button"
                   className={`headerFilterButton ${column.key in columnFilters ? 'active' : ''}`}
-                  title={`${label} 筛选`}
+                  title={`${title} 筛选`}
                   draggable={false}
                   onClick={(event) => { event.preventDefault(); event.stopPropagation(); openColumnFilter(column); }}
                   onMouseDown={(event) => event.stopPropagation()}
                 >▼</button>}</span>
                 {openFilterKey === column.key && <div className="columnFilterMenu" ref={filterMenuRef} onClick={(event) => event.stopPropagation()} onMouseDown={(event) => event.stopPropagation()}>
-                  <b>{label} 筛选</b>
+                  <b title={title}>{label} 筛选</b>
                   <input className="columnFilterSearch" placeholder="搜索该列值" value={filterSearch} onChange={(event) => setFilterSearch(event.target.value)} />
                   <div className="columnFilterActions">
                     <button type="button" onClick={() => setDraftValues(uniqueValuesByColumn.get(column.key) ?? [])}>全选</button>
