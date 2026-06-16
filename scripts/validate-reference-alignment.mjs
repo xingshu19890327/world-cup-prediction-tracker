@@ -53,11 +53,16 @@ try {
         module: ts.ModuleKind.CommonJS,
         target: ts.ScriptTarget.ES2020,
         esModuleInterop: true,
+        resolveJsonModule: true,
       },
       fileName: sourcePath,
     }).outputText;
     writeFileSync(outputPath, transpiled);
   }
+
+  const referenceOutputPath = path.join(tmpRoot, 'reference/seedMatches.from_excel.json');
+  mkdirSync(path.dirname(referenceOutputPath), { recursive: true });
+  writeFileSync(referenceOutputPath, readFileSync(referencePath, 'utf8'));
 
   const requireFromTemp = createRequire(path.join(tmpRoot, 'scripts/validate-reference-alignment.mjs'));
   const { seedMatches } = requireFromTemp(path.join(tmpRoot, 'src/data/seedMatches.js'));
