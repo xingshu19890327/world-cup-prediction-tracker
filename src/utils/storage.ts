@@ -1,5 +1,5 @@
 import { seedMatches } from '../data/seedMatches';
-import type { MatchPrediction, TableLayoutState } from '../types';
+import type { ColumnFiltersState, MatchPrediction, TableLayoutState } from '../types';
 import { recalculateMatch } from './score';
 
 const KEY = 'world-cup-tracker-v4-matches';
@@ -7,6 +7,7 @@ const COLUMN_WIDTHS_KEY = 'columnWidths';
 const COLUMN_ORDER_KEY = 'columnOrder';
 const HIDDEN_COLUMNS_KEY = 'hiddenColumns';
 const FROZEN_COLUMNS_KEY = 'frozenColumns';
+const COLUMN_FILTERS_KEY = 'columnFilters';
 
 export const defaultTableLayout: TableLayoutState = {
   columnWidths: {},
@@ -66,3 +67,7 @@ export const clearTableLayout = () => {
   localStorage.removeItem(HIDDEN_COLUMNS_KEY);
   localStorage.removeItem(FROZEN_COLUMNS_KEY);
 };
+
+export const loadColumnFilters = (): ColumnFiltersState => readJson<ColumnFiltersState>(COLUMN_FILTERS_KEY, {});
+export const saveColumnFilters = (filters: ColumnFiltersState) => localStorage.setItem(COLUMN_FILTERS_KEY, JSON.stringify(filters));
+export const clearColumnFilters = () => localStorage.removeItem(COLUMN_FILTERS_KEY);

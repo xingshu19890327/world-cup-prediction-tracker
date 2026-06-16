@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
-import type { FiltersState, MatchPrediction } from './types';
-import { importMatches, loadMatches, resetMatches, saveMatches } from './utils/storage';
+import type { ColumnFiltersState, FiltersState, MatchPrediction } from './types';
+import { clearColumnFilters, importMatches, loadColumnFilters, loadMatches, resetMatches, saveColumnFilters, saveMatches } from './utils/storage';
 import { recalculateMatch } from './utils/score';
 import { applyEspnResults, espnDateFromAustraliaTime } from './utils/results';
 import TopNav from './components/TopNav';
@@ -11,6 +11,8 @@ import MatchTable from './components/MatchTable';
 import MatchEditor from './components/MatchEditor';
 import InfoPanel from './components/InfoPanel';
 const defaultFilters: FiltersState = { round:'全部', group:'全部', completion:'全部', hit:'全部', team:'', city:'', quick:'全部' };
+const blankValueLabel = '空白';
+const columnFilterValue = (value: unknown) => String(value ?? '').trim() || blankValueLabel;
 const missingOdds = (m: MatchPrediction) => !m.sbHomeOdds || !m.sbDrawOdds || !m.sbAwayOdds || !m.claudeCorrespondingSbWdlOdds;
 const expandEspnDates = (dates: string[]) => [...new Set(dates.flatMap((date) => {
   const parsed = new Date(Date.UTC(Number(date.slice(0, 4)), Number(date.slice(4, 6)) - 1, Number(date.slice(6, 8))));
@@ -24,6 +26,7 @@ const expandEspnDates = (dates: string[]) => [...new Set(dates.flatMap((date) =>
 export default function App(){
   const [matches,setMatches]=useState<MatchPrediction[]>(loadMatches);
   const [filters,setFilters]=useState<FiltersState>(defaultFilters);
+  const [columnFilters,setColumnFilters]=useState<ColumnFiltersState>(loadColumnFilters);
   const [editing,setEditing]=useState<MatchPrediction|null>(null);
   const [message,setMessage]=useState('');
   const [updatingResults,setUpdatingResults]=useState(false);
@@ -96,8 +99,13 @@ export default function App(){
       const pass = filters.hit==='Claude赛果命中'?m.claudeWdlHit==='✓':filters.hit==='ChatGPT赛果命中'?m.chatgptWdlHit==='✓':filters.hit==='Claude比分命中'?m.claudeAnyScoreHit==='✓':filters.hit==='ChatGPT比分命中'?m.chatgptAnyScoreHit==='✓':m.claudeWdlHit==='×'&&m.chatgptWdlHit==='×';
       if(!pass) return false;
     }
+    for (const [key, values] of Object.entries(columnFilters) as [keyof MatchPrediction, string[]][]) {
+      if (!values.includes(columnFilterValue(m[key]))) return false;
+    }
     return true;
-  }),[matches,filters]);
+  }),[matches,filters,columnFilters]);
+  const updateColumnFilters=(next:ColumnFiltersState)=>{setColumnFilters(next);saveColumnFilters(next)};
+  const clearAllFilters=()=>{setFilters(defaultFilters);setColumnFilters({});clearColumnFilters()};
   return <main>
     <div className="shell">
       <TopNav/>
@@ -116,9 +124,9 @@ export default function App(){
         totalCount={matches.length}
         groups={groups}
         rounds={rounds}
-        onClearAll={() => setFilters(defaultFilters)}
+        onClearAll={clearAllFilters}
       />
-      <MatchTable matches={visible} onOpen={setEditing}/>
+      <MatchTable matches={visible} allMatches={matches} columnFilters={columnFilters} onColumnFiltersChange={updateColumnFilters} onOpen={setEditing}/>
       <InfoPanel/>
       <DataManagementPanel
         matches={matches}
