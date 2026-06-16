@@ -2,6 +2,7 @@ import type { MatchPrediction } from '../types';
 import { recalculateMatch } from './score';
 
 type SourceResult = {
+  id?: string;
   matchNo?: number;
   utcDate?: string;
   completed?: boolean;
@@ -12,6 +13,17 @@ type SourceResult = {
   score?: { home: number; away: number } | null;
 };
 
+type MatchDirection = 'normal' | 'reversed';
+type FocusReason = 'ESPN 未返回该比赛' | 'ESPN 返回但状态未完赛' | '球队匹配失败' | '日期校验失败' | 'ESPN 返回比分无效' | '已更新';
+
+type MatchFailureSample = {
+  matchNo: number;
+  homeTeam: string;
+  awayTeam: string;
+  australiaTime: string;
+  candidates: string[];
+};
+
 export type ResultsUpdateStats = {
   updated: number;
   matchFailed: number;
@@ -20,6 +32,8 @@ export type ResultsUpdateStats = {
   espnCompleted: number;
   espnUnfinished: number;
   espnMissing: number;
+  focusDiagnostics: { matchNo: number; label: string; reason: FocusReason }[];
+  matchFailureSamples: MatchFailureSample[];
 };
 
 export type ResultsUpdateResponse = {
@@ -27,61 +41,26 @@ export type ResultsUpdateResponse = {
   stats: ResultsUpdateStats;
 };
 
-const teamAliases: Record<string, string> = {
-  '墨西哥': 'mexico',
-  '南非': 'southafrica',
-  '韩国': 'korea',
-  '捷克': 'czechia',
-  '加拿大': 'canada',
-  '波黑': 'bosniaherzegovina',
-  '美国': 'unitedstates',
-  '巴拉圭': 'paraguay',
-  '土耳其': 'turkey',
-  '瑞士': 'switzerland',
-  '巴西': 'brazil',
-  '摩洛哥': 'morocco',
-  '苏格兰': 'scotland',
-  '海地': 'haiti',
-  '德国': 'germany',
-  '库拉索': 'curacao',
-  '法国': 'france',
-  '挪威': 'norway',
-  '卡塔尔': 'qatar',
-  '加纳': 'ghana',
-  '科特迪瓦': 'ivorycoast',
-  '厄瓜多尔': 'ecuador',
-  '澳大利亚': 'australia',
-  '伊朗': 'iran',
-  'iran': 'iran',
-  'ir iran': 'iran',
-  'islamic republic of iran': 'iran',
-  'irn': 'iran',
-  '西班牙': 'spain',
-  '沙特': 'saudiarabia',
-  '阿根廷': 'argentina',
-  '奥地利': 'austria',
-  '英格兰': 'england',
-  '克罗地亚': 'croatia',
-  '日本': 'japan',
-  '荷兰': 'netherlands',
-  '新西兰': 'newzealand',
-  'new zealand': 'newzealand',
-  'nzl': 'newzealand',
-  '埃及': 'egypt',
-  '比利时': 'belgium',
-  '牙买加': 'jamaica',
-  '哥伦比亚': 'colombia',
-  '尼日利亚': 'nigeria',
-  '乌拉圭': 'uruguay',
-  '约旦': 'jordan',
-  '塞内加尔': 'senegal',
-  '葡萄牙': 'portugal',
-  '乌兹别克斯坦': 'uzbekistan',
-  '阿尔及利亚': 'algeria',
-};
+const aliasEntries: [string, string][] = [
+  ['墨西哥', 'mexico'], ['南非', 'southafrica'], ['韩国', 'korea'], ['捷克', 'czechia'], ['加拿大', 'canada'],
+  ['波黑', 'bosniaherzegovina'], ['美国', 'unitedstates'], ['巴拉圭', 'paraguay'], ['土耳其', 'turkey'],
+  ['瑞士', 'switzerland'], ['巴西', 'brazil'], ['摩洛哥', 'morocco'], ['苏格兰', 'scotland'], ['海地', 'haiti'],
+  ['德国', 'germany'], ['库拉索', 'curacao'], ['法国', 'france'], ['挪威', 'norway'], ['卡塔尔', 'qatar'],
+  ['加纳', 'ghana'], ['科特迪瓦', 'ivorycoast'], ['厄瓜多尔', 'ecuador'], ['澳大利亚', 'australia'],
+  ['伊朗', 'iran'], ['iran', 'iran'], ['ir iran', 'iran'], ['islamic republic of iran', 'iran'], ['irn', 'iran'],
+  ['瑞典', 'sweden'], ['sweden', 'sweden'], ['swe', 'sweden'],
+  ['突尼斯', 'tunisia'], ['tunisia', 'tunisia'], ['tun', 'tunisia'],
+  ['西班牙', 'spain'], ['spain', 'spain'], ['esp', 'spain'],
+  ['佛得角', 'capeverde'], ['cape verde', 'capeverde'], ['cabo verde', 'capeverde'], ['cape verde islands', 'capeverde'], ['cpv', 'capeverde'],
+  ['沙特', 'saudiarabia'], ['阿根廷', 'argentina'], ['奥地利', 'austria'], ['英格兰', 'england'],
+  ['克罗地亚', 'croatia'], ['日本', 'japan'], ['荷兰', 'netherlands'], ['新西兰', 'newzealand'], ['new zealand', 'newzealand'], ['nzl', 'newzealand'],
+  ['埃及', 'egypt'], ['比利时', 'belgium'], ['牙买加', 'jamaica'], ['哥伦比亚', 'colombia'], ['尼日利亚', 'nigeria'],
+  ['乌拉圭', 'uruguay'], ['约旦', 'jordan'], ['塞内加尔', 'senegal'], ['葡萄牙', 'portugal'], ['乌兹别克斯坦', 'uzbekistan'], ['阿尔及利亚', 'algeria'],
+];
+const teamAliases = Object.fromEntries(aliasEntries.map(([key, value]) => [key.toLowerCase(), value]));
 
 const compactTeam = (value: string) => value.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/&/g, 'and').replace(/[^a-z0-9]/g, '');
-const normalizeTeam = (value: string) => teamAliases[value.trim().toLowerCase()] ?? teamAliases[value.trim()] ?? compactTeam(value);
+const normalizeTeam = (value: string) => teamAliases[value.trim().toLowerCase()] ?? compactTeam(value);
 const normalizeSourceSide = (name: string, abbreviation?: string) => [normalizeTeam(name), abbreviation ? normalizeTeam(abbreviation) : ''].filter(Boolean);
 
 export const espnDateFromAustraliaTime = (australiaTime: string) => {
@@ -95,22 +74,21 @@ const seedUtcDate = (australiaTime: string) => {
   if (!yyyymmdd) return null;
   return Date.UTC(Number(yyyymmdd.slice(0, 4)), Number(yyyymmdd.slice(4, 6)) - 1, Number(yyyymmdd.slice(6, 8)));
 };
-
 const sourceUtcDate = (utcDate?: string) => {
   if (!utcDate) return null;
   const date = new Date(utcDate);
   if (Number.isNaN(date.getTime())) return null;
   return Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate());
 };
-
-const sameDate = (match: MatchPrediction, result: SourceResult) => {
+const dateDeltaDays = (match: MatchPrediction, result: SourceResult) => {
   const seed = seedUtcDate(match.australiaTime);
   const source = sourceUtcDate(result.utcDate);
-  if (seed === null || source === null) return false;
-  return Math.abs(seed - source) <= 24 * 60 * 60 * 1000;
+  if (seed === null || source === null) return Number.POSITIVE_INFINITY;
+  return Math.round((source - seed) / (24 * 60 * 60 * 1000));
 };
+const sameDate = (match: MatchPrediction, result: SourceResult) => Math.abs(dateDeltaDays(match, result)) <= 1;
 
-const teamDirection = (match: MatchPrediction, result: SourceResult): 'normal' | 'reversed' | null => {
+const teamDirection = (match: MatchPrediction, result: SourceResult): MatchDirection | null => {
   const home = normalizeTeam(match.homeTeam);
   const away = normalizeTeam(match.awayTeam);
   const resultHome = normalizeSourceSide(result.homeTeam, result.homeAbbreviation);
@@ -120,37 +98,61 @@ const teamDirection = (match: MatchPrediction, result: SourceResult): 'normal' |
   return null;
 };
 
-const findMatch = (rows: MatchPrediction[], result: SourceResult) => {
-  if (Number.isInteger(result.matchNo)) {
-    const index = rows.findIndex((match) => match.matchNo === result.matchNo);
-    if (index >= 0) return { index, direction: teamDirection(rows[index], result) ?? 'normal' };
-  }
+const describeResult = (result: SourceResult) => `${result.homeTeam} vs ${result.awayTeam}${result.utcDate ? ` ${result.utcDate.slice(0, 10)}` : ''}${result.completed ? ' 已完赛' : ' 未完赛'}`;
 
-  const teamCandidates = rows
-    .map((match, index) => ({ match, index, direction: teamDirection(match, result) }))
-    .filter(({ direction }) => direction);
-  const dateCandidates = teamCandidates.filter(({ match }) => sameDate(match, result));
-  const candidates = dateCandidates.length > 0 ? dateCandidates : teamCandidates;
-  return candidates.length === 1 ? { index: candidates[0].index, direction: candidates[0].direction as 'normal' | 'reversed' } : null;
+const findMatch = (rows: MatchPrediction[], result: SourceResult) => {
+  const candidates = rows
+    .map((match, index) => ({ match, index, direction: teamDirection(match, result), dateOk: sameDate(match, result), delta: Math.abs(dateDeltaDays(match, result)) }))
+    .filter((candidate) => candidate.direction && candidate.dateOk)
+    .sort((a, b) => a.delta - b.delta);
+  return candidates.length === 1 ? { index: candidates[0].index, direction: candidates[0].direction as MatchDirection } : null;
 };
+
+const diagnoseMatch = (match: MatchPrediction, results: SourceResult[]): { reason: FocusReason; candidates: SourceResult[] } => {
+  const nearbyResults = results.filter((result) => sameDate(match, result));
+  const teamCandidates = results.filter((result) => teamDirection(match, result));
+  if (teamCandidates.length === 0) {
+    return nearbyResults.length > 0
+      ? { reason: '球队匹配失败', candidates: nearbyResults.slice(0, 3) }
+      : { reason: 'ESPN 未返回该比赛', candidates: closestCandidates(match, results) };
+  }
+  const dateCandidates = teamCandidates.filter((result) => sameDate(match, result));
+  if (dateCandidates.length === 0) return { reason: '日期校验失败', candidates: teamCandidates.slice(0, 3) };
+  const completed = dateCandidates.find((result) => result.completed);
+  if (!completed) return { reason: 'ESPN 返回但状态未完赛', candidates: dateCandidates.slice(0, 3) };
+  if (!completed.score || !Number.isFinite(completed.score.home) || !Number.isFinite(completed.score.away)) return { reason: 'ESPN 返回比分无效', candidates: [completed] };
+  return { reason: 'ESPN 未返回该比赛', candidates: [] };
+};
+
+const closestCandidates = (match: MatchPrediction, results: SourceResult[]) => {
+  const seed = seedUtcDate(match.australiaTime);
+  return [...results]
+    .sort((a, b) => Math.abs((sourceUtcDate(a.utcDate) ?? 0) - (seed ?? 0)) - Math.abs((sourceUtcDate(b.utcDate) ?? 0) - (seed ?? 0)))
+    .slice(0, 3);
+};
+
+const blankPastMatches = (rows: MatchPrediction[]) => rows.filter((match) => !match.actualScore.trim() && seedUtcDate(match.australiaTime) !== null && seedUtcDate(match.australiaTime)! <= Date.now());
 
 export const applyEspnResults = (rows: MatchPrediction[], results: SourceResult[]): ResultsUpdateResponse => {
   const nextRows = [...rows];
   const matchedIndexes = new Set<number>();
+  const failureSamples = new Map<number, MatchFailureSample>();
   const stats: ResultsUpdateStats = {
-    updated: 0,
-    matchFailed: 0,
-    sourceFailed: 0,
-    espnReturned: results.length,
+    updated: 0, matchFailed: 0, sourceFailed: 0, espnReturned: results.length,
     espnCompleted: results.filter((result) => result.completed).length,
     espnUnfinished: results.filter((result) => !result.completed).length,
-    espnMissing: 0,
+    espnMissing: 0, focusDiagnostics: [], matchFailureSamples: [],
   };
 
   for (const result of results) {
     const found = findMatch(nextRows, result);
     if (!found) {
       stats.matchFailed += 1;
+      const candidates = rows.filter((match) => sameDate(match, result)).slice(0, 3);
+      for (const match of candidates) {
+        if (failureSamples.size >= 5) break;
+        failureSamples.set(match.matchNo, { matchNo: match.matchNo, homeTeam: match.homeTeam, awayTeam: match.awayTeam, australiaTime: match.australiaTime, candidates: [describeResult(result)] });
+      }
       continue;
     }
 
@@ -160,7 +162,7 @@ export const applyEspnResults = (rows: MatchPrediction[], results: SourceResult[
       nextRows[found.index] = recalculateMatch({ ...current, actualScore: '', actualResult: '', completionStatus: '未赛' });
       continue;
     }
-    if (!result.score) continue;
+    if (!result.score || !Number.isFinite(result.score.home) || !Number.isFinite(result.score.away)) continue;
 
     const homeScore = found.direction === 'normal' ? result.score.home : result.score.away;
     const awayScore = found.direction === 'normal' ? result.score.away : result.score.home;
@@ -168,6 +170,20 @@ export const applyEspnResults = (rows: MatchPrediction[], results: SourceResult[
     stats.updated += 1;
   }
 
+  const focusMatches = rows.filter((match) => match.matchNo === 12 || match.matchNo === 13);
+  stats.focusDiagnostics = focusMatches.map((match) => {
+    const updated = nextRows.find((row) => row.matchNo === match.matchNo)?.actualScore.trim();
+    const diagnostic = updated ? { reason: '已更新' as FocusReason, candidates: [] } : diagnoseMatch(match, results);
+    return { matchNo: match.matchNo, label: `${match.homeTeam} vs ${match.awayTeam}`, reason: diagnostic.reason };
+  });
+
+  for (const match of blankPastMatches(nextRows)) {
+    if (failureSamples.size >= 5) break;
+    const diagnostic = diagnoseMatch(match, results);
+    failureSamples.set(match.matchNo, { matchNo: match.matchNo, homeTeam: match.homeTeam, awayTeam: match.awayTeam, australiaTime: match.australiaTime, candidates: diagnostic.candidates.map(describeResult) });
+  }
+
+  stats.matchFailureSamples = [...failureSamples.values()].slice(0, 5);
   stats.espnMissing = rows.length - matchedIndexes.size;
   return { rows: nextRows, stats };
 };
