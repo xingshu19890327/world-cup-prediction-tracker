@@ -71,7 +71,7 @@ main {
   content:"";
   position:absolute;
   inset:0;
-  background:linear-gradient(90deg,#fffffff0 0 30%,#ffffff9c 52%,#f8fafc9e 100%);
+  background:linear-gradient(90deg,#fffffff2 0 36%,#ffffff8f 54%,#f8fafcc4 100%);
   z-index:4
 }
 
@@ -81,25 +81,15 @@ main {
   max-width:780px;
   flex:1 1 720px;
   align-self:center;
-  padding:18px 0;
-  border:0;
-  border-radius:0;
-  background:linear-gradient(90deg,#ffffffd9 0%,#f8fbffb8 58%,#f8fbff00 100%);
-  box-shadow:none;
-  backdrop-filter:none;
+  padding:22px 24px;
+  border:1px solid #ffffffaa;
+  border-radius:24px;
+  background:linear-gradient(90deg,#fffffff0 0%,#f8fbffcc 74%,#f8fbff66 100%);
+  box-shadow:0 18px 46px #24415a18;
+  backdrop-filter:blur(7px);
   display:flex;
   flex-direction:column;
   justify-content:center
-}
-
-.heroCopy:before {
-  content:"";
-  position:absolute;
-  inset:-28px -90px -28px -36px;
-  z-index:-1;
-  background:radial-gradient(ellipse at 28% 48%,#ffffffd6 0 36%,#f8fbff86 55%,transparent 76%);
-  filter:blur(18px);
-  pointer-events:none
 }
 
 .heroBadge {
