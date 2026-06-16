@@ -37,11 +37,12 @@ export default function App(){
   const updateActualResults=async()=>{
     setUpdatingResults(true);
     try {
-      const pendingDates = [...new Set(matches
-        .filter((match) => match.matchNo >= 16 && !match.actualScore.trim())
+      const trackerDates = [...new Set(matches
         .map((match) => espnDateFromAustraliaTime(match.australiaTime))
         .filter(Boolean))];
-      const urls = pendingDates.length ? expandEspnDates(pendingDates).map((date) => `/api/espn-results?dates=${date}`) : ['/api/espn-results'];
+      const urls = trackerDates.length
+        ? [...expandEspnDates(trackerDates).map((date) => `/api/espn-results?dates=${date}`), '/api/espn-results']
+        : ['/api/espn-results'];
       const payloads = await Promise.all(urls.map(async (url) => {
         const response = await fetch(url);
         const payload = await response.json().catch(()=>({ message: 'ESPN 赛果数据源返回格式错误。' }));
@@ -56,14 +57,14 @@ export default function App(){
         seen.add(key);
         return true;
       });
-      const { rows, stats, match16Diagnostic } = applyEspnResults(matches, sourceMatches);
+      const { rows, stats } = applyEspnResults(matches, sourceMatches);
       setMatches(rows);
       saveMatches(rows);
       const now = new Date().toLocaleString('zh-CN', { hour12: false });
       setLastResultsUpdate(now);
-      setMessage(`实际赛果更新完成：ESPN 返回完赛 ${stats.espnCompleted} 场，未完赛 ${stats.espnUnfinished} 场；成功更新 ${stats.updated} 场，已有比分跳过 ${stats.skippedExisting} 场，matchNo < 16 跳过 ${stats.skippedBeforeMatch16} 场，匹配失败 ${stats.matchFailed} 场，未完赛跳过 ${stats.unfinishedSkipped} 场。${match16Diagnostic ? ` ${match16Diagnostic}` : ''}`);
+      setMessage(`实际赛果更新完成：ESPN 返回比赛 ${stats.espnReturned} 场，已完赛 ${stats.espnCompleted} 场，未完赛 ${stats.espnUnfinished} 场，成功更新 ${stats.updated} 场，ESPN 未返回 ${stats.espnMissing} 场，匹配失败 ${stats.matchFailed} 场。`);
     } catch (error) {
-      setMessage(`ESPN 赛果数据源失败：${error instanceof Error ? error.message : '未知错误'}。成功更新 0 场，已有比分跳过 0 场，matchNo < 16 跳过 0 场，匹配失败 0 场，未完赛跳过 0 场。`);
+      setMessage(`ESPN 赛果数据源失败：${error instanceof Error ? error.message : '未知错误'}。ESPN 返回比赛 0 场，已完赛 0 场，未完赛 0 场，成功更新 0 场，ESPN 未返回 ${matches.length} 场，匹配失败 0 场。`);
     } finally {
       setUpdatingResults(false);
     }
