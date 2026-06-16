@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import type { FiltersState, MatchPrediction } from './types';
 import { importMatches, loadMatches, resetMatches, saveMatches } from './utils/storage';
 import { recalculateMatch } from './utils/score';
@@ -19,6 +19,11 @@ export default function App(){
   const [message,setMessage]=useState('');
   const [updatingResults,setUpdatingResults]=useState(false);
   const [lastResultsUpdate,setLastResultsUpdate]=useState('');
+  useEffect(() => {
+    if (!message) return;
+    const timer = window.setTimeout(() => setMessage(''), 3000);
+    return () => window.clearTimeout(timer);
+  }, [message]);
   const setAndSave=(rows:MatchPrediction[])=>{setMatches(rows);saveMatches(rows);setMessage('已保存到本地。')};
   const updateActualResults=async()=>{
     setUpdatingResults(true);
