@@ -1,5 +1,5 @@
-import { useMemo, useState } from 'react';
-import type { MatchPrediction } from '../types';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import type { ColumnFiltersState, MatchPrediction } from '../types';
 import { clearTableLayout, loadTableLayout, saveTableLayout } from '../utils/storage';
 
 export type TableColumn = { key: keyof MatchPrediction; label: string; group: string; defaultWidth: number; lowFrequency?: boolean };
@@ -39,11 +39,63 @@ const columns: TableColumn[] = [
 const defaultOrder = columns.map((column) => column.key);
 const columnByKey = new Map(columns.map((column) => [column.key, column]));
 const widthFor = (column: TableColumn, widths: Record<string, number>) => widths[column.key] ?? column.defaultWidth;
+const filterableKeys = new Set<keyof MatchPrediction>([
+  'chatgptWdlPrediction','chatgptPredictedScore1','chatgptPredictedScore2','chatgptPredictedScore3','chatgptWdlHit','chatgptAnyScoreHit',
+  'matchNo','round','homeTeam','awayTeam','australiaTime','group','city','actualScore','actualResult','completionStatus',
+  'claudeWdlPrediction','claudePredictedScore1','claudePredictedScore2','claudePredictedScore3','claudeWdlHit','claudeAnyScoreHit',
+]);
+const blankValueLabel = '空白';
+const filterValue = (value: unknown) => String(value ?? '').trim() || blankValueLabel;
+
 const actualResultKeys: (keyof MatchPrediction)[] = ['actualScore', 'actualResult', 'completionStatus', 'chatgptActualWinner'];
 
-export default function MatchTable({ matches, onOpen }: { matches: MatchPrediction[]; onOpen:(m:MatchPrediction)=>void }) {
+export default function MatchTable({ matches, allMatches, columnFilters, onColumnFiltersChange, onOpen }: { matches: MatchPrediction[]; allMatches: MatchPrediction[]; columnFilters: ColumnFiltersState; onColumnFiltersChange:(filters:ColumnFiltersState)=>void; onOpen:(m:MatchPrediction)=>void }) {
   const [layout, setLayout] = useState(loadTableLayout);
   const [dragKey, setDragKey] = useState<keyof MatchPrediction | null>(null);
+  const [openFilterKey, setOpenFilterKey] = useState<keyof MatchPrediction | null>(null);
+  const [filterSearch, setFilterSearch] = useState('');
+  const [draftValues, setDraftValues] = useState<string[]>([]);
+  const filterMenuRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    const onPointerDown = (event: MouseEvent) => {
+      if (filterMenuRef.current && !filterMenuRef.current.contains(event.target as Node)) setOpenFilterKey(null);
+    };
+    window.addEventListener('mousedown', onPointerDown);
+    return () => window.removeEventListener('mousedown', onPointerDown);
+  }, []);
+
+  const uniqueValuesByColumn = useMemo(() => {
+    const values = new Map<keyof MatchPrediction, string[]>();
+    columns.forEach((column) => {
+      if (!filterableKeys.has(column.key)) return;
+      values.set(column.key, [...new Set(allMatches.map((match) => filterValue(match[column.key])))].sort((a, b) => a.localeCompare(b, 'zh-CN', { numeric: true })));
+    });
+    return values;
+  }, [allMatches]);
+
+  const openColumnFilter = (column: TableColumn) => {
+    const values = uniqueValuesByColumn.get(column.key) ?? [];
+    setOpenFilterKey(column.key);
+    setFilterSearch('');
+    setDraftValues(columnFilters[column.key]?.length ? [...columnFilters[column.key]!] : values);
+  };
+
+  const applyColumnFilter = (key: keyof MatchPrediction) => {
+    const values = uniqueValuesByColumn.get(key) ?? [];
+    const next = { ...columnFilters };
+    if (draftValues.length === values.length) delete next[key];
+    else next[key] = draftValues;
+    onColumnFiltersChange(next);
+    setOpenFilterKey(null);
+  };
+
+  const clearColumnFilter = (key: keyof MatchPrediction) => {
+    const next = { ...columnFilters };
+    delete next[key];
+    onColumnFiltersChange(next);
+    setDraftValues(uniqueValuesByColumn.get(key) ?? []);
+  };
 
   const persist = (next: typeof layout) => {
     setLayout(next);
@@ -146,12 +198,39 @@ export default function MatchTable({ matches, onOpen }: { matches: MatchPredicti
                 onDragStart={() => setDragKey(column.key)}
                 onDragOver={(event) => event.preventDefault()}
                 onDrop={() => moveColumn(column.key)}
-                className={`${column.group} ${frozen ? 'frozen' : ''}`}
+                className={`${column.group} ${frozen ? 'frozen' : ''} ${column.key in columnFilters ? 'filteredHeader' : ''}`}
                 style={style}
               >
-                {column.label}
+                <span className="headerContent"><span className="headerLabel">{column.label}</span>{filterableKeys.has(column.key) && <button
+                  type="button"
+                  className={`headerFilterButton ${column.key in columnFilters ? 'active' : ''}`}
+                  title={`${column.label} 筛选`}
+                  draggable={false}
+                  onClick={(event) => { event.preventDefault(); event.stopPropagation(); openColumnFilter(column); }}
+                  onMouseDown={(event) => event.stopPropagation()}
+                >▼</button>}</span>
+                {openFilterKey === column.key && <div className="columnFilterMenu" ref={filterMenuRef} onClick={(event) => event.stopPropagation()} onMouseDown={(event) => event.stopPropagation()}>
+                  <b>{column.label} 筛选</b>
+                  <input className="columnFilterSearch" placeholder="搜索该列值" value={filterSearch} onChange={(event) => setFilterSearch(event.target.value)} />
+                  <div className="columnFilterActions">
+                    <button type="button" onClick={() => setDraftValues(uniqueValuesByColumn.get(column.key) ?? [])}>全选</button>
+                    <button type="button" onClick={() => setDraftValues([])}>清空</button>
+                    <button type="button" onClick={() => clearColumnFilter(column.key)}>清除本列筛选</button>
+                  </div>
+                  <div className="columnFilterOptions">
+                    {(uniqueValuesByColumn.get(column.key) ?? []).filter((value) => value.toLowerCase().includes(filterSearch.toLowerCase())).map((value) => <label key={value}>
+                      <input type="checkbox" checked={draftValues.includes(value)} onChange={(event) => setDraftValues(event.target.checked ? [...draftValues, value] : draftValues.filter((item) => item !== value))} />
+                      <span title={value}>{value}</span>
+                    </label>)}
+                  </div>
+                  <div className="columnFilterFooter">
+                    <button type="button" onClick={() => applyColumnFilter(column.key)}>确认</button>
+                    <button type="button" onClick={() => setOpenFilterKey(null)}>取消</button>
+                  </div>
+                </div>}
                 <span className="resizeHandle" onMouseDown={(event) => {
                   event.preventDefault();
+                  event.stopPropagation();
                   resize(column, event.clientX, widthFor(column, layout.columnWidths));
                 }} />
               </th>;

@@ -42,6 +42,8 @@ export type MatchPrediction = {
 };
 
 
+export type ColumnFiltersState = Partial<Record<keyof MatchPrediction, string[]>>;
+
 export type TableLayoutState = {
   columnWidths: Record<string, number>;
   columnOrder: (keyof MatchPrediction)[];

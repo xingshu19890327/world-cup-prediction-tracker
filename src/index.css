@@ -842,3 +842,120 @@ th.frozen.actual {
   }
 
 }
+
+.headerContent {
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:4px;
+  min-width:0;
+  padding-right:8px
+}
+
+.headerLabel {
+  overflow:hidden;
+  text-overflow:ellipsis;
+  white-space:nowrap
+}
+
+.headerFilterButton {
+  flex:0 0 auto;
+  border:1px solid #ffffff77;
+  background:#ffffff22;
+  color:inherit;
+  border-radius:5px;
+  font-size:9px;
+  line-height:1;
+  padding:2px 3px;
+  cursor:pointer
+}
+
+.headerFilterButton:hover,.headerFilterButton.active {
+  background:#dbeafe;
+  border-color:#93c5fd;
+  color:#1d4ed8
+}
+
+th.filteredHeader {
+  box-shadow:inset 0 -3px 0 #60a5fa
+}
+
+th {
+  overflow:visible
+}
+
+.columnFilterMenu {
+  position:absolute;
+  top:calc(100% + 4px);
+  right:4px;
+  z-index:40;
+  width:240px;
+  max-width:320px;
+  padding:10px;
+  border:1px solid #b8c6d4;
+  border-radius:10px;
+  background:#fff;
+  color:#1f2937;
+  box-shadow:0 16px 36px #0f172a33;
+  text-align:left;
+  white-space:normal;
+  cursor:default
+}
+
+.columnFilterSearch {
+  width:100%;
+  margin:8px 0;
+  box-sizing:border-box;
+  border:1px solid #cbd5e1;
+  border-radius:8px;
+  padding:6px 8px
+}
+
+.columnFilterActions,.columnFilterFooter {
+  display:flex;
+  gap:6px;
+  flex-wrap:wrap;
+  margin-bottom:8px
+}
+
+.columnFilterActions button,.columnFilterFooter button {
+  border:1px solid #cbd5e1;
+  background:#f8fafc;
+  border-radius:7px;
+  padding:4px 7px;
+  cursor:pointer
+}
+
+.columnFilterFooter {
+  justify-content:flex-end;
+  margin:8px 0 0
+}
+
+.columnFilterFooter button:first-child {
+  background:#2563eb;
+  border-color:#2563eb;
+  color:#fff
+}
+
+.columnFilterOptions {
+  max-height:220px;
+  overflow:auto;
+  border:1px solid #e2e8f0;
+  border-radius:8px;
+  padding:4px
+}
+
+.columnFilterOptions label {
+  display:flex;
+  align-items:center;
+  gap:6px;
+  padding:4px 3px;
+  color:#1f2937;
+  font-weight:400
+}
+
+.columnFilterOptions span {
+  overflow:hidden;
+  text-overflow:ellipsis;
+  white-space:nowrap
+}
