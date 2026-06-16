@@ -2,31 +2,31 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import type { ColumnFiltersState, MatchPrediction } from '../types';
 import { clearTableLayout, loadTableLayout, saveTableLayout } from '../utils/storage';
 
-export type TableColumn = { key: keyof MatchPrediction; label: string; group: string; defaultWidth: number; lowFrequency?: boolean };
+export type TableColumn = { key: keyof MatchPrediction; label: string; group: string; defaultWidth: number; minWidth?: number; maxWidth?: number; lowFrequency?: boolean };
 
 const columns: TableColumn[] = [
-  { key: 'chatgptWdlPrediction', label: 'ChatGPT胜平负主推', group: 'gpt', defaultWidth: 118 },
-  { key: 'chatgptPredictedScore1', label: 'ChatGPT比分1', group: 'gpt', defaultWidth: 92 },
-  { key: 'chatgptPredictedScore2', label: 'ChatGPT比分2', group: 'gpt', defaultWidth: 92 },
-  { key: 'chatgptPredictedScore3', label: 'ChatGPT比分3', group: 'gpt', defaultWidth: 92 },
-  { key: 'chatgptWdlHit', label: 'ChatGPT赛果命中', group: 'gpt', defaultWidth: 90 },
-  { key: 'chatgptAnyScoreHit', label: 'ChatGPT比分命中', group: 'gpt', defaultWidth: 90 },
-  { key: 'matchNo', label: '场次', group: 'base', defaultWidth: 56 },
-  { key: 'round', label: '轮次', group: 'base', defaultWidth: 82 },
-  { key: 'homeTeam', label: '主队', group: 'base', defaultWidth: 108 },
-  { key: 'awayTeam', label: '客队', group: 'base', defaultWidth: 108 },
-  { key: 'australiaTime', label: '澳洲时间(AEST)', group: 'base', defaultWidth: 136 },
-  { key: 'group', label: '组', group: 'base', defaultWidth: 50 },
-  { key: 'city', label: '城市', group: 'base', defaultWidth: 108 },
-  { key: 'actualScore', label: '实际比分', group: 'actual', defaultWidth: 78 },
-  { key: 'actualResult', label: '实际赛果', group: 'actual', defaultWidth: 88 },
-  { key: 'completionStatus', label: '状态', group: 'actual', defaultWidth: 76 },
-  { key: 'claudeWdlPrediction', label: 'Claude胜平负主推', group: 'claude', defaultWidth: 116 },
-  { key: 'claudePredictedScore1', label: 'Claude比分1', group: 'claude', defaultWidth: 90 },
-  { key: 'claudePredictedScore2', label: 'Claude比分2', group: 'claude', defaultWidth: 90 },
-  { key: 'claudePredictedScore3', label: 'Claude比分3', group: 'claude', defaultWidth: 90 },
-  { key: 'claudeWdlHit', label: 'Claude赛果命中', group: 'claude', defaultWidth: 88 },
-  { key: 'claudeAnyScoreHit', label: 'Claude比分命中', group: 'claude', defaultWidth: 88 },
+  { key: 'chatgptWdlPrediction', label: 'ChatGPT胜平负主推', group: 'gpt', defaultWidth: 118, minWidth: 105, maxWidth: 145 },
+  { key: 'chatgptPredictedScore1', label: 'ChatGPT比分1', group: 'gpt', defaultWidth: 84, minWidth: 74, maxWidth: 105 },
+  { key: 'chatgptPredictedScore2', label: 'ChatGPT比分2', group: 'gpt', defaultWidth: 84, minWidth: 74, maxWidth: 105 },
+  { key: 'chatgptPredictedScore3', label: 'ChatGPT比分3', group: 'gpt', defaultWidth: 84, minWidth: 74, maxWidth: 105 },
+  { key: 'chatgptWdlHit', label: 'ChatGPT赛果命中', group: 'gpt', defaultWidth: 92, minWidth: 82, maxWidth: 112 },
+  { key: 'chatgptAnyScoreHit', label: 'ChatGPT比分命中', group: 'gpt', defaultWidth: 92, minWidth: 82, maxWidth: 112 },
+  { key: 'matchNo', label: '场次', group: 'base', defaultWidth: 54, minWidth: 50, maxWidth: 62 },
+  { key: 'round', label: '轮次', group: 'base', defaultWidth: 82, minWidth: 66, maxWidth: 115 },
+  { key: 'homeTeam', label: '主队', group: 'base', defaultWidth: 112, minWidth: 95, maxWidth: 140 },
+  { key: 'awayTeam', label: '客队', group: 'base', defaultWidth: 112, minWidth: 95, maxWidth: 140 },
+  { key: 'australiaTime', label: '澳洲时间(AEST)', group: 'base', defaultWidth: 158, minWidth: 145, maxWidth: 180 },
+  { key: 'group', label: '组', group: 'base', defaultWidth: 50, minWidth: 45, maxWidth: 58 },
+  { key: 'city', label: '城市', group: 'base', defaultWidth: 118, minWidth: 100, maxWidth: 150 },
+  { key: 'actualScore', label: '实际比分', group: 'actual', defaultWidth: 82, minWidth: 70, maxWidth: 96 },
+  { key: 'actualResult', label: '实际赛果', group: 'actual', defaultWidth: 82, minWidth: 74, maxWidth: 98 },
+  { key: 'completionStatus', label: '状态', group: 'actual', defaultWidth: 78, minWidth: 70, maxWidth: 90 },
+  { key: 'claudeWdlPrediction', label: 'Claude胜平负主推', group: 'claude', defaultWidth: 116, minWidth: 105, maxWidth: 145 },
+  { key: 'claudePredictedScore1', label: 'Claude比分1', group: 'claude', defaultWidth: 82, minWidth: 72, maxWidth: 104 },
+  { key: 'claudePredictedScore2', label: 'Claude比分2', group: 'claude', defaultWidth: 82, minWidth: 72, maxWidth: 104 },
+  { key: 'claudePredictedScore3', label: 'Claude比分3', group: 'claude', defaultWidth: 82, minWidth: 72, maxWidth: 104 },
+  { key: 'claudeWdlHit', label: 'Claude赛果命中', group: 'claude', defaultWidth: 90, minWidth: 80, maxWidth: 110 },
+  { key: 'claudeAnyScoreHit', label: 'Claude比分命中', group: 'claude', defaultWidth: 90, minWidth: 80, maxWidth: 110 },
   { key: 'chatgptActualWinner', label: '实际胜方', group: 'actual', defaultWidth: 110 },
   { key: 'predictionDisagreement', label: '预测分歧', group: 'extra', defaultWidth: 82 },
   { key: 'notes', label: '备注', group: 'extra', defaultWidth: 140, lowFrequency: true },
@@ -38,7 +38,8 @@ const columns: TableColumn[] = [
 
 const defaultOrder = columns.map((column) => column.key);
 const columnByKey = new Map(columns.map((column) => [column.key, column]));
-const widthFor = (column: TableColumn, widths: Record<string, number>) => widths[column.key] ?? column.defaultWidth;
+const clampWidth = (column: TableColumn, width: number) => Math.max(column.minWidth ?? 56, Math.min(column.maxWidth ?? 220, width));
+const labelFor = (column: TableColumn, labels: Record<string, string>) => labels[column.key] || column.label;
 const filterableKeys = new Set<keyof MatchPrediction>([
   'chatgptWdlPrediction','chatgptPredictedScore1','chatgptPredictedScore2','chatgptPredictedScore3','chatgptWdlHit','chatgptAnyScoreHit',
   'matchNo','round','homeTeam','awayTeam','australiaTime','group','city','actualScore','actualResult','completionStatus',
@@ -55,6 +56,8 @@ export default function MatchTable({ matches, allMatches, columnFilters, onColum
   const [openFilterKey, setOpenFilterKey] = useState<keyof MatchPrediction | null>(null);
   const [filterSearch, setFilterSearch] = useState('');
   const [draftValues, setDraftValues] = useState<string[]>([]);
+  const [editingHeader, setEditingHeader] = useState<keyof MatchPrediction | null>(null);
+  const [headerDraft, setHeaderDraft] = useState('');
   const filterMenuRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
@@ -108,20 +111,42 @@ export default function MatchTable({ matches, allMatches, columnFilters, onColum
     return [...valid, ...missing].map((key) => columnByKey.get(key)!).filter((column) => !layout.hiddenColumns.includes(column.key));
   }, [layout.columnOrder, layout.hiddenColumns]);
 
+  const calculateAutoWidths = (sourceColumns = orderedColumns, sourceMatches = matches) => {
+    const sampleRows = sourceMatches.slice(0, 40);
+    return sourceColumns.reduce<Record<string, number>>((widths, column) => {
+      const title = labelFor(column, layout.columnLabels);
+      const values = [title, ...sampleRows.map((match) => String(match[column.key] ?? ''))];
+      const longest = values.reduce((max, value) => Math.max(max, [...value].reduce((sum, char) => sum + (char.charCodeAt(0) > 255 ? 12 : 7), 0)), 0);
+      const filterSpace = filterableKeys.has(column.key) ? 24 : 10;
+      widths[column.key] = clampWidth(column, Math.ceil(longest + filterSpace + 18));
+      return widths;
+    }, {});
+  };
+
+  const effectiveWidths = useMemo(() => {
+    const autoWidths = calculateAutoWidths();
+    return orderedColumns.reduce<Record<string, number>>((widths, column) => {
+      widths[column.key] = layout.columnWidths[column.key] ?? autoWidths[column.key] ?? column.defaultWidth;
+      return widths;
+    }, {});
+  }, [orderedColumns, matches, layout.columnWidths, layout.columnLabels]);
+
+  const widthForColumn = (column: TableColumn) => effectiveWidths[column.key] ?? column.defaultWidth;
+
   const leftOffsets = useMemo(() => {
     let left = 0;
     return orderedColumns.map((column, index) => {
       const offset = left;
-      if (index < layout.frozenColumns) left += widthFor(column, layout.columnWidths);
+      if (index < layout.frozenColumns) left += widthForColumn(column);
       return offset;
     });
-  }, [orderedColumns, layout.columnWidths, layout.frozenColumns]);
+  }, [orderedColumns, effectiveWidths, layout.frozenColumns]);
 
-  const tableWidth = orderedColumns.reduce((sum, column) => sum + widthFor(column, layout.columnWidths), 0);
+  const tableWidth = orderedColumns.reduce((sum, column) => sum + widthForColumn(column), 0);
 
   const resize = (column: TableColumn, startX: number, startWidth: number) => {
     const onMove = (event: MouseEvent) => {
-      const width = Math.max(56, Math.round(startWidth + event.clientX - startX));
+      const width = clampWidth(column, Math.round(startWidth + event.clientX - startX));
       persist({ ...layout, columnWidths: { ...layout.columnWidths, [column.key]: width } });
     };
     const onUp = () => {
@@ -154,11 +179,29 @@ export default function MatchTable({ matches, allMatches, columnFilters, onColum
     setLayout(loadTableLayout());
   };
 
+  const autoFitColumns = () => persist({ ...layout, columnWidths: calculateAutoWidths() });
+  const startHeaderEdit = (column: TableColumn) => {
+    setEditingHeader(column.key);
+    setHeaderDraft(labelFor(column, layout.columnLabels));
+  };
+  const saveHeaderEdit = (column: TableColumn) => {
+    const value = headerDraft.trim();
+    const nextLabels = { ...layout.columnLabels };
+    if (!value || value === column.label) delete nextLabels[column.key];
+    else nextLabels[column.key] = value;
+    persist({ ...layout, columnLabels: nextLabels });
+    setEditingHeader(null);
+  };
+  const cancelHeaderEdit = () => {
+    setEditingHeader(null);
+    setHeaderDraft('');
+  };
+
   return <>
     <section className="panel tableSettings">
       <div>
         <b>表格设置</b>
-        <p>拖动表头移动列顺序；拖动表头右边界调整列宽。</p>
+        <p>拖动表头移动列顺序；拖动表头右边界调整列宽；双击表头文字可改显示名称。</p>
       </div>
       <label>冻结列数量
         <select value={layout.frozenColumns} onChange={(event) => persist({ ...layout, frozenColumns: Number(event.target.value) })}>
@@ -174,23 +217,25 @@ export default function MatchTable({ matches, allMatches, columnFilters, onColum
           {columns.filter((column) => column.lowFrequency).map((column) => (
             <label key={column.key}>
               <input type="checkbox" checked={!layout.hiddenColumns.includes(column.key)} onChange={() => toggleColumn(column.key)} />
-              {column.label}
+              {labelFor(column, layout.columnLabels)}
             </label>
           ))}
         </div>
       </details>
+      <button onClick={autoFitColumns}>自动适配列宽</button>
       <button onClick={resetLayout}>恢复默认表格布局</button>
     </section>
     <section className="tableWrap">
       <table style={{ minWidth: tableWidth }}>
         <colgroup>
-          {orderedColumns.map((column) => <col key={column.key} style={{ width: widthFor(column, layout.columnWidths) }} />)}
+          {orderedColumns.map((column) => <col key={column.key} style={{ width: widthForColumn(column) }} />)}
         </colgroup>
         <thead>
           <tr>
             {orderedColumns.map((column, index) => {
               const frozen = index < layout.frozenColumns;
-              const width = widthFor(column, layout.columnWidths);
+              const width = widthForColumn(column);
+              const label = labelFor(column, layout.columnLabels);
               const style = frozen ? { left: leftOffsets[index], width, minWidth: width } : { width, minWidth: width };
               return <th
                 key={column.key}
@@ -201,16 +246,29 @@ export default function MatchTable({ matches, allMatches, columnFilters, onColum
                 className={`${column.group} ${frozen ? 'frozen' : ''} ${column.key in columnFilters ? 'filteredHeader' : ''}`}
                 style={style}
               >
-                <span className="headerContent"><span className="headerLabel">{column.label}</span>{filterableKeys.has(column.key) && <button
+                <span className="headerContent">{editingHeader === column.key ? <input
+                  className="headerLabelInput"
+                  value={headerDraft}
+                  autoFocus
+                  draggable={false}
+                  onChange={(event) => setHeaderDraft(event.target.value)}
+                  onBlur={() => saveHeaderEdit(column)}
+                  onKeyDown={(event) => {
+                    if (event.key === 'Enter') saveHeaderEdit(column);
+                    if (event.key === 'Escape') cancelHeaderEdit();
+                  }}
+                  onClick={(event) => event.stopPropagation()}
+                  onMouseDown={(event) => event.stopPropagation()}
+                /> : <span className="headerLabel" title={label} onDoubleClick={(event) => { event.preventDefault(); event.stopPropagation(); startHeaderEdit(column); }}>{label}</span>}{filterableKeys.has(column.key) && <button
                   type="button"
                   className={`headerFilterButton ${column.key in columnFilters ? 'active' : ''}`}
-                  title={`${column.label} 筛选`}
+                  title={`${label} 筛选`}
                   draggable={false}
                   onClick={(event) => { event.preventDefault(); event.stopPropagation(); openColumnFilter(column); }}
                   onMouseDown={(event) => event.stopPropagation()}
                 >▼</button>}</span>
                 {openFilterKey === column.key && <div className="columnFilterMenu" ref={filterMenuRef} onClick={(event) => event.stopPropagation()} onMouseDown={(event) => event.stopPropagation()}>
-                  <b>{column.label} 筛选</b>
+                  <b>{label} 筛选</b>
                   <input className="columnFilterSearch" placeholder="搜索该列值" value={filterSearch} onChange={(event) => setFilterSearch(event.target.value)} />
                   <div className="columnFilterActions">
                     <button type="button" onClick={() => setDraftValues(uniqueValuesByColumn.get(column.key) ?? [])}>全选</button>
@@ -231,7 +289,7 @@ export default function MatchTable({ matches, allMatches, columnFilters, onColum
                 <span className="resizeHandle" onMouseDown={(event) => {
                   event.preventDefault();
                   event.stopPropagation();
-                  resize(column, event.clientX, widthFor(column, layout.columnWidths));
+                  resize(column, event.clientX, widthForColumn(column));
                 }} />
               </th>;
             })}
@@ -248,7 +306,7 @@ export default function MatchTable({ matches, allMatches, columnFilters, onColum
             >
               {orderedColumns.map((column, index) => {
                 const frozen = index < layout.frozenColumns;
-                const width = widthFor(column, layout.columnWidths);
+                const width = widthForColumn(column);
                 const style = frozen ? { left: leftOffsets[index], width, minWidth: width } : { width, minWidth: width };
                 const value = String(match[column.key] ?? '');
                 const pendingActual = isPending && actualResultKeys.includes(column.key);
