@@ -34,6 +34,7 @@ export type ResultsUpdateStats = {
   espnMissing: number;
   focusDiagnostics: { matchNo: number; label: string; reason: FocusReason }[];
   matchFailureSamples: MatchFailureSample[];
+  updatedMatches: { matchNo: number; label: string; score: string }[];
 };
 
 export type ResultsUpdateResponse = {
@@ -141,7 +142,7 @@ export const applyEspnResults = (rows: MatchPrediction[], results: SourceResult[
     updated: 0, matchFailed: 0, sourceFailed: 0, espnReturned: results.length,
     espnCompleted: results.filter((result) => result.completed).length,
     espnUnfinished: results.filter((result) => !result.completed).length,
-    espnMissing: 0, focusDiagnostics: [], matchFailureSamples: [],
+    espnMissing: 0, focusDiagnostics: [], matchFailureSamples: [], updatedMatches: [],
   };
 
   for (const result of results) {
@@ -166,8 +167,11 @@ export const applyEspnResults = (rows: MatchPrediction[], results: SourceResult[
 
     const homeScore = found.direction === 'normal' ? result.score.home : result.score.away;
     const awayScore = found.direction === 'normal' ? result.score.away : result.score.home;
-    nextRows[found.index] = recalculateMatch({ ...current, actualScore: `${homeScore}-${awayScore}` });
+    const nextScore = `${homeScore}-${awayScore}`;
+    if (current.actualScore.trim() === nextScore) continue;
+    nextRows[found.index] = recalculateMatch({ ...current, actualScore: nextScore });
     stats.updated += 1;
+    stats.updatedMatches.push({ matchNo: current.matchNo, label: `${current.homeTeam} vs ${current.awayTeam}`, score: nextScore });
   }
 
   const focusMatches = rows.filter((match) => match.matchNo === 12 || match.matchNo === 13);
