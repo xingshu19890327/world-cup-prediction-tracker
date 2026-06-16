@@ -62,7 +62,10 @@ export default function App(){
       saveMatches(rows);
       const now = new Date().toLocaleString('zh-CN', { hour12: false });
       setLastResultsUpdate(now);
-      setMessage(`实际赛果更新完成：ESPN 返回比赛 ${stats.espnReturned} 场，已完赛 ${stats.espnCompleted} 场，未完赛 ${stats.espnUnfinished} 场，成功更新 ${stats.updated} 场，ESPN 未返回 ${stats.espnMissing} 场，匹配失败 ${stats.matchFailed} 场。`);
+      const focusMissing = stats.focusDiagnostics.filter((item) => item.reason !== '已更新');
+      const focusMessage = focusMissing.length ? ` 未更新重点场次：${focusMissing.map((item) => `${item.matchNo} ${item.label}：${item.reason}`).join('；')}。` : '';
+      const failureSamples = stats.matchFailureSamples.length ? ` 匹配失败样例：${stats.matchFailureSamples.map((sample) => `${sample.matchNo} ${sample.homeTeam} vs ${sample.awayTeam} ${sample.australiaTime}，ESPN候选 ${sample.candidates.length ? sample.candidates.join(' / ') : '无'}`).join('；')}。` : '';
+      setMessage(`实际赛果更新完成：ESPN 返回比赛 ${stats.espnReturned} 场，已完赛 ${stats.espnCompleted} 场，未完赛 ${stats.espnUnfinished} 场，成功更新 ${stats.updated} 场，ESPN 未返回 ${stats.espnMissing} 场，匹配失败 ${stats.matchFailed} 场。${focusMessage}${failureSamples}`);
     } catch (error) {
       setMessage(`ESPN 赛果数据源失败：${error instanceof Error ? error.message : '未知错误'}。ESPN 返回比赛 0 场，已完赛 0 场，未完赛 0 场，成功更新 0 场，ESPN 未返回 ${matches.length} 场，匹配失败 0 场。`);
     } finally {
