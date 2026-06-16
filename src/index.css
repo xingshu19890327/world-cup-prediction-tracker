@@ -846,20 +846,37 @@ th.frozen.actual {
 .headerContent {
   display:flex;
   align-items:center;
-  justify-content:center;
-  gap:4px;
+  justify-content:space-between;
+  gap:6px;
   min-width:0;
-  padding-right:8px
+  padding-right:10px
 }
 
 .headerLabel {
+  flex:1 1 auto;
+  min-width:0;
   overflow:hidden;
   text-overflow:ellipsis;
-  white-space:nowrap
+  white-space:normal;
+  line-height:1.15;
+  cursor:text
+}
+
+.headerLabelInput {
+  flex:1 1 auto;
+  min-width:0;
+  width:100%;
+  border:1px solid #bfdbfe;
+  border-radius:5px;
+  padding:2px 4px;
+  font:inherit;
+  line-height:1.15;
+  color:#0f172a
 }
 
 .headerFilterButton {
   flex:0 0 auto;
+  margin-left:auto;
   border:1px solid #ffffff77;
   background:#ffffff22;
   color:inherit;
