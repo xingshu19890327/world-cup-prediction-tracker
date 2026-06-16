@@ -590,6 +590,22 @@ th.base {
   background:#dcfce7
 }
 
+tr.matchCompleted td.actualCompleted {
+  background:#dcfce7;
+  box-shadow:inset 3px 0 0 #22c55e
+}
+
+tr.matchPending td.actualPending {
+  background:repeating-linear-gradient(
+    135deg,
+    #f8fafc 0,
+    #f8fafc 8px,
+    rgba(148,163,184,.08) 8px,
+    rgba(148,163,184,.08) 16px
+  );
+  color:#64748b
+}
+
 .extra {
   background:#fafafa
 }
@@ -647,6 +663,22 @@ th.actual {
   background:#dcfce7
 }
 
+tr.matchCompleted td.frozen.actualCompleted {
+  background:#dcfce7;
+  box-shadow:inset 3px 0 0 #22c55e,1px 0 0 #cbd5e1
+}
+
+tr.matchPending td.frozen.actualPending {
+  background:repeating-linear-gradient(
+    135deg,
+    #f8fafc 0,
+    #f8fafc 8px,
+    rgba(148,163,184,.08) 8px,
+    rgba(148,163,184,.08) 16px
+  );
+  color:#64748b
+}
+
 .frozen.extra {
   background:#fafafa
 }
@@ -683,6 +715,29 @@ th.frozen.actual {
 
 .resizeHandle:hover {
   background:#ffffff55
+}
+
+.statusBadge {
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  min-width:52px;
+  padding:2px 8px;
+  border-radius:999px;
+  font-weight:800;
+  line-height:1.2
+}
+
+.statusDone {
+  background:#16a34a;
+  color:white;
+  box-shadow:0 0 0 1px #15803d22
+}
+
+.statusPending {
+  background:#e2e8f0;
+  color:#475569;
+  box-shadow:0 0 0 1px #94a3b833
 }
 
 .dataManagement {

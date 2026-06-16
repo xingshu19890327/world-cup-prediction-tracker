@@ -12,22 +12,22 @@ const columns: TableColumn[] = [
   { key: 'group', label: '组', group: 'base', defaultWidth: 56 },
   { key: 'australiaTime', label: '澳洲时间(AEST)', group: 'base', defaultWidth: 160 },
   { key: 'city', label: '城市', group: 'base', defaultWidth: 112 },
-  { key: 'actualScore', label: '实际比分★', group: 'actual', defaultWidth: 96 },
-  { key: 'actualResult', label: '实际胜负(自动)', group: 'actual', defaultWidth: 122 },
-  { key: 'completionStatus', label: '完赛状态', group: 'actual', defaultWidth: 96 },
-  { key: 'claudePredictedScore1', label: 'Claude比分预测1', group: 'claude', defaultWidth: 132 },
-  { key: 'claudePredictedScore2', label: 'Claude比分预测2', group: 'claude', defaultWidth: 132 },
-  { key: 'claudePredictedScore3', label: 'Claude比分预测3', group: 'claude', defaultWidth: 132 },
-  { key: 'claudeWdlPrediction', label: 'Claude胜平负预测', group: 'claude', defaultWidth: 138 },
-  { key: 'claudeAnyScoreHit', label: 'Claude比分命中?', group: 'claude', defaultWidth: 126 },
-  { key: 'claudeWdlHit', label: 'Claude赛果命中?', group: 'claude', defaultWidth: 126 },
-  { key: 'chatgptWdlPrediction', label: 'ChatGPT预测胜负', group: 'gpt', defaultWidth: 138 },
-  { key: 'chatgptActualWinner', label: 'ChatGPT实际胜方(自动)', group: 'actual', defaultWidth: 158 },
-  { key: 'chatgptWdlHit', label: 'ChatGPT赛果命中?', group: 'gpt', defaultWidth: 132 },
-  { key: 'chatgptAnyScoreHit', label: 'ChatGPT比分命中?', group: 'gpt', defaultWidth: 132 },
-  { key: 'chatgptPredictedScore1', label: 'ChatGPT比分预测1', group: 'gpt', defaultWidth: 138 },
-  { key: 'chatgptPredictedScore2', label: 'ChatGPT比分预测2', group: 'gpt', defaultWidth: 138 },
-  { key: 'chatgptPredictedScore3', label: 'ChatGPT比分预测3', group: 'gpt', defaultWidth: 138 },
+  { key: 'actualScore', label: '实际比分', group: 'actual', defaultWidth: 96 },
+  { key: 'actualResult', label: '实际赛果', group: 'actual', defaultWidth: 122 },
+  { key: 'completionStatus', label: '状态', group: 'actual', defaultWidth: 96 },
+  { key: 'claudePredictedScore1', label: 'Claude比分1', group: 'claude', defaultWidth: 132 },
+  { key: 'claudePredictedScore2', label: 'Claude比分2', group: 'claude', defaultWidth: 132 },
+  { key: 'claudePredictedScore3', label: 'Claude比分3', group: 'claude', defaultWidth: 132 },
+  { key: 'claudeWdlPrediction', label: 'Claude胜平负主推', group: 'claude', defaultWidth: 138 },
+  { key: 'claudeAnyScoreHit', label: 'Claude比分命中', group: 'claude', defaultWidth: 126 },
+  { key: 'claudeWdlHit', label: 'Claude赛果命中', group: 'claude', defaultWidth: 126 },
+  { key: 'chatgptWdlPrediction', label: 'ChatGPT胜平负主推', group: 'gpt', defaultWidth: 138 },
+  { key: 'chatgptActualWinner', label: '实际胜方', group: 'actual', defaultWidth: 158 },
+  { key: 'chatgptWdlHit', label: 'ChatGPT赛果命中', group: 'gpt', defaultWidth: 132 },
+  { key: 'chatgptAnyScoreHit', label: 'ChatGPT比分命中', group: 'gpt', defaultWidth: 132 },
+  { key: 'chatgptPredictedScore1', label: 'ChatGPT比分1', group: 'gpt', defaultWidth: 138 },
+  { key: 'chatgptPredictedScore2', label: 'ChatGPT比分2', group: 'gpt', defaultWidth: 138 },
+  { key: 'chatgptPredictedScore3', label: 'ChatGPT比分3', group: 'gpt', defaultWidth: 138 },
   { key: 'predictionDisagreement', label: '预测分歧', group: 'extra', defaultWidth: 88 },
   { key: 'notes', label: '备注', group: 'extra', defaultWidth: 160, lowFrequency: true },
   { key: 'oddsSource', label: '赔率来源', group: 'extra', defaultWidth: 130, lowFrequency: true },
@@ -39,6 +39,7 @@ const columns: TableColumn[] = [
 const defaultOrder = columns.map((column) => column.key);
 const columnByKey = new Map(columns.map((column) => [column.key, column]));
 const widthFor = (column: TableColumn, widths: Record<string, number>) => widths[column.key] ?? column.defaultWidth;
+const actualResultKeys: (keyof MatchPrediction)[] = ['actualScore', 'actualResult', 'completionStatus', 'chatgptActualWinner'];
 
 export default function MatchTable({ matches, onOpen }: { matches: MatchPrediction[]; onOpen:(m:MatchPrediction)=>void }) {
   const [layout, setLayout] = useState(loadTableLayout);
@@ -158,20 +159,34 @@ export default function MatchTable({ matches, onOpen }: { matches: MatchPredicti
           </tr>
         </thead>
         <tbody>
-          {matches.map((match) => <tr key={match.id} onClick={() => onOpen(match)}>
-            {orderedColumns.map((column, index) => {
-              const frozen = index < layout.frozenColumns;
-              const width = widthFor(column, layout.columnWidths);
-              const style = frozen ? { left: leftOffsets[index], width, minWidth: width } : { width, minWidth: width };
-              return <td
-                key={column.key}
-                className={`${column.group} ${frozen ? 'frozen' : ''} ${match[column.key] === '✓' ? 'ok' : match[column.key] === '×' ? 'bad' : ''}`}
-                style={style}
-              >
-                {String(match[column.key] ?? '')}
-              </td>;
-            })}
-          </tr>)}
+          {matches.map((match) => {
+            const isCompleted = match.completionStatus === '已完赛';
+            const isPending = match.completionStatus === '未赛';
+            return <tr
+              key={match.id}
+              className={isCompleted ? 'matchCompleted' : isPending ? 'matchPending' : ''}
+              onClick={() => onOpen(match)}
+            >
+              {orderedColumns.map((column, index) => {
+                const frozen = index < layout.frozenColumns;
+                const width = widthFor(column, layout.columnWidths);
+                const style = frozen ? { left: leftOffsets[index], width, minWidth: width } : { width, minWidth: width };
+                const value = String(match[column.key] ?? '');
+                const pendingActual = isPending && actualResultKeys.includes(column.key);
+                const completedActual = isCompleted && actualResultKeys.includes(column.key);
+                const hitClass = value === '✓' ? 'ok' : value === '×' ? 'bad' : '';
+                return <td
+                  key={column.key}
+                  className={`${column.group} ${frozen ? 'frozen' : ''} ${completedActual ? 'actualCompleted' : ''} ${pendingActual ? 'actualPending' : ''} ${hitClass}`}
+                  style={style}
+                >
+                  {column.key === 'completionStatus' && (isCompleted || isPending)
+                    ? <span className={`statusBadge ${isCompleted ? 'statusDone' : 'statusPending'}`}>{value}</span>
+                    : value}
+                </td>;
+              })}
+            </tr>;
+          })}
         </tbody>
       </table>
     </section>
