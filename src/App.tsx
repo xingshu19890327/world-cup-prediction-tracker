@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import type { FiltersState, MatchPrediction } from './types';
 import { importMatches, loadMatches, resetMatches, saveMatches } from './utils/storage';
 import { recalculateMatch } from './utils/score';
-import { applyFootballDataResults } from './utils/results';
+import { applyEspnResults, espnDateFromAustraliaTime } from './utils/results';
 import TopNav from './components/TopNav';
 import DashboardCards from './components/DashboardCards';
 import Filters from './components/Filters';
@@ -12,6 +12,15 @@ import MatchEditor from './components/MatchEditor';
 import InfoPanel from './components/InfoPanel';
 const defaultFilters: FiltersState = { round:'全部', group:'全部', completion:'全部', hit:'全部', team:'', city:'', quick:'全部' };
 const missingOdds = (m: MatchPrediction) => !m.sbHomeOdds || !m.sbDrawOdds || !m.sbAwayOdds || !m.claudeCorrespondingSbWdlOdds;
+const expandEspnDates = (dates: string[]) => [...new Set(dates.flatMap((date) => {
+  const parsed = new Date(Date.UTC(Number(date.slice(0, 4)), Number(date.slice(4, 6)) - 1, Number(date.slice(6, 8))));
+  if (Number.isNaN(parsed.getTime())) return [date];
+  return [-1, 0, 1].map((offset) => {
+    const next = new Date(parsed);
+    next.setUTCDate(parsed.getUTCDate() + offset);
+    return `${next.getUTCFullYear()}${String(next.getUTCMonth() + 1).padStart(2, '0')}${String(next.getUTCDate()).padStart(2, '0')}`;
+  });
+}))];
 export default function App(){
   const [matches,setMatches]=useState<MatchPrediction[]>(loadMatches);
   const [filters,setFilters]=useState<FiltersState>(defaultFilters);
@@ -21,28 +30,40 @@ export default function App(){
   const [lastResultsUpdate,setLastResultsUpdate]=useState('');
   useEffect(() => {
     if (!message) return;
-    const timer = window.setTimeout(() => setMessage(''), 3000);
+    const timer = window.setTimeout(() => setMessage(''), 10000);
     return () => window.clearTimeout(timer);
   }, [message]);
   const setAndSave=(rows:MatchPrediction[])=>{setMatches(rows);saveMatches(rows);setMessage('已保存到本地。')};
   const updateActualResults=async()=>{
     setUpdatingResults(true);
     try {
-      const response = await fetch('/api/results');
-      const payload = await response.json().catch(()=>({ message: '赛果数据源返回格式错误。' }));
-      if(!response.ok) {
-        const friendlyMissingToken = '未配置赛果 API token。当前无法自动更新实际赛果，你仍可以手动填写实际比分或导入 JSON。';
-        setMessage(payload.error === 'missing_token' ? friendlyMissingToken : payload.message || '赛果数据源失败：无法更新实际赛果。成功更新 0 场，已有比分跳过 0 场，匹配失败 0 场，数据源失败 1 场。');
-        return;
-      }
-      const { rows, stats } = applyFootballDataResults(matches, Array.isArray(payload.matches) ? payload.matches : []);
+      const pendingDates = [...new Set(matches
+        .filter((match) => match.matchNo >= 16 && !match.actualScore.trim())
+        .map((match) => espnDateFromAustraliaTime(match.australiaTime))
+        .filter(Boolean))];
+      const urls = pendingDates.length ? expandEspnDates(pendingDates).map((date) => `/api/espn-results?dates=${date}`) : ['/api/espn-results'];
+      const payloads = await Promise.all(urls.map(async (url) => {
+        const response = await fetch(url);
+        const payload = await response.json().catch(()=>({ message: 'ESPN 赛果数据源返回格式错误。' }));
+        if(!response.ok) throw new Error(payload.message || 'ESPN 赛果数据源失败。');
+        return payload;
+      }));
+      const allMatches = payloads.flatMap((payload) => Array.isArray(payload.matches) ? payload.matches : []);
+      const seen = new Set<string>();
+      const sourceMatches = allMatches.filter((match) => {
+        const key = match.id || `${match.utcDate}-${match.homeTeam}-${match.awayTeam}`;
+        if (seen.has(key)) return false;
+        seen.add(key);
+        return true;
+      });
+      const { rows, stats, match16Diagnostic } = applyEspnResults(matches, sourceMatches);
       setMatches(rows);
       saveMatches(rows);
       const now = new Date().toLocaleString('zh-CN', { hour12: false });
       setLastResultsUpdate(now);
-      setMessage(`实际赛果更新完成：成功更新 ${stats.updated} 场，已有比分跳过 ${stats.skippedExisting} 场，匹配失败 ${stats.matchFailed} 场，数据源失败 ${stats.sourceFailed} 场。`);
-    } catch {
-      setMessage('赛果数据源失败：无法更新实际赛果。成功更新 0 场，已有比分跳过 0 场，匹配失败 0 场，数据源失败 1 场。');
+      setMessage(`实际赛果更新完成：ESPN 返回完赛 ${stats.espnCompleted} 场，未完赛 ${stats.espnUnfinished} 场；成功更新 ${stats.updated} 场，已有比分跳过 ${stats.skippedExisting} 场，matchNo < 16 跳过 ${stats.skippedBeforeMatch16} 场，匹配失败 ${stats.matchFailed} 场，未完赛跳过 ${stats.unfinishedSkipped} 场。${match16Diagnostic ? ` ${match16Diagnostic}` : ''}`);
+    } catch (error) {
+      setMessage(`ESPN 赛果数据源失败：${error instanceof Error ? error.message : '未知错误'}。成功更新 0 场，已有比分跳过 0 场，matchNo < 16 跳过 0 场，匹配失败 0 场，未完赛跳过 0 场。`);
     } finally {
       setUpdatingResults(false);
     }
