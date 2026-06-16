@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import type { FiltersState, MatchPrediction } from './types';
 import { importMatches, loadMatches, resetMatches, saveMatches } from './utils/storage';
 import { recalculateMatch } from './utils/score';
-import { applyFootballDataResults } from './utils/results';
+import { applyEspnResults } from './utils/results';
 import TopNav from './components/TopNav';
 import DashboardCards from './components/DashboardCards';
 import Filters from './components/Filters';
@@ -28,21 +28,21 @@ export default function App(){
   const updateActualResults=async()=>{
     setUpdatingResults(true);
     try {
-      const response = await fetch('/api/results');
-      const payload = await response.json().catch(()=>({ message: '赛果数据源返回格式错误。' }));
+      const response = await fetch('/api/espn-results');
+      const payload = await response.json().catch(()=>({ message: '无法从 ESPN 更新实际赛果，请稍后重试。已有比分不会被清空。' }));
       if(!response.ok) {
-        const friendlyMissingToken = '未配置赛果 API token。当前无法自动更新实际赛果，你仍可以手动填写实际比分或导入 JSON。';
-        setMessage(payload.error === 'missing_token' ? friendlyMissingToken : payload.message || '赛果数据源失败：无法更新实际赛果。成功更新 0 场，已有比分跳过 0 场，匹配失败 0 场，数据源失败 1 场。');
+        setMessage(payload.message || '无法从 ESPN 更新实际赛果，请稍后重试。已有比分不会被清空。');
         return;
       }
-      const { rows, stats } = applyFootballDataResults(matches, Array.isArray(payload.matches) ? payload.matches : []);
+      const sourceMatches = Array.isArray(payload.matches) ? payload.matches : [];
+      const { rows, stats } = applyEspnResults(matches, sourceMatches);
       setMatches(rows);
       saveMatches(rows);
       const now = new Date().toLocaleString('zh-CN', { hour12: false });
       setLastResultsUpdate(now);
-      setMessage(`实际赛果更新完成：成功更新 ${stats.updated} 场，已有比分跳过 ${stats.skippedExisting} 场，匹配失败 ${stats.matchFailed} 场，数据源失败 ${stats.sourceFailed} 场。`);
+      setMessage(stats.updated === 0 && stats.skippedExisting === 0 && stats.skippedBelowMatchNo16 === 0 && stats.matchFailed === 0 ? 'ESPN 暂未返回新的已完赛赛果。' : `已从 ESPN 更新实际赛果：成功 ${stats.updated} 场，已有比分跳过 ${stats.skippedExisting} 场，matchNo < 16 跳过 ${stats.skippedBelowMatchNo16} 场，匹配失败 ${stats.matchFailed} 场，数据源返回 ${stats.sourceCompleted} 场完赛。`);
     } catch {
-      setMessage('赛果数据源失败：无法更新实际赛果。成功更新 0 场，已有比分跳过 0 场，匹配失败 0 场，数据源失败 1 场。');
+      setMessage('无法从 ESPN 更新实际赛果，请稍后重试。已有比分不会被清空。');
     } finally {
       setUpdatingResults(false);
     }
