@@ -569,6 +569,11 @@ th {
   background:#f8fbff
 }
 
+th.base {
+  background:#1f497d;
+  color:white
+}
+
 .claude {
   background:#efe7ff
 }
@@ -780,4 +785,3 @@ th.frozen.actual {
   }
 
 }
-
