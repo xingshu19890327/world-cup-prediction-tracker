@@ -71,7 +71,7 @@ main {
   content:"";
   position:absolute;
   inset:0;
-  background:linear-gradient(90deg,#fffffff0 0 30%,#ffffff9c 52%,#f8fafc9e 100%);
+  background:linear-gradient(90deg,#fffffff2 0 36%,#ffffff8f 54%,#f8fafcc4 100%);
   z-index:4
 }
 
@@ -81,12 +81,12 @@ main {
   max-width:780px;
   flex:1 1 720px;
   align-self:center;
-  padding:0;
-  border:0;
-  border-radius:0;
-  background:transparent;
-  box-shadow:none;
-  backdrop-filter:none;
+  padding:22px 24px;
+  border:1px solid #ffffffaa;
+  border-radius:24px;
+  background:linear-gradient(90deg,#fffffff0 0%,#f8fbffcc 74%,#f8fbff66 100%);
+  box-shadow:0 18px 46px #24415a18;
+  backdrop-filter:blur(7px);
   display:flex;
   flex-direction:column;
   justify-content:center
@@ -125,7 +125,7 @@ h1 {
   font-size:clamp(32px,3.25vw,48px);
   line-height:1.05;
   letter-spacing:-.04em;
-  text-shadow:0 2px 0 #ffffff,0 12px 30px #ffffff
+  text-shadow:0 2px 0 #ffffffcc
 }
 
 .heroSubtitle {
@@ -133,8 +133,7 @@ h1 {
   margin:12px 0 0;
   color:#475569;
   font-weight:650;
-  letter-spacing:.01em;
-  text-shadow:0 1px 0 #ffffff,0 8px 22px #ffffff
+  letter-spacing:.01em
 }
 
 .matchCards {
