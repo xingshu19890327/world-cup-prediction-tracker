@@ -5,35 +5,35 @@ import { clearTableLayout, loadTableLayout, saveTableLayout } from '../utils/sto
 export type TableColumn = { key: keyof MatchPrediction; label: string; group: string; defaultWidth: number; lowFrequency?: boolean };
 
 const columns: TableColumn[] = [
-  { key: 'matchNo', label: '场次', group: 'base', defaultWidth: 64 },
-  { key: 'round', label: '轮次', group: 'base', defaultWidth: 92 },
-  { key: 'homeTeam', label: '主队', group: 'base', defaultWidth: 112 },
-  { key: 'awayTeam', label: '客队', group: 'base', defaultWidth: 112 },
-  { key: 'group', label: '组', group: 'base', defaultWidth: 56 },
-  { key: 'australiaTime', label: '澳洲时间(AEST)', group: 'base', defaultWidth: 160 },
-  { key: 'city', label: '城市', group: 'base', defaultWidth: 112 },
-  { key: 'actualScore', label: '实际比分', group: 'actual', defaultWidth: 96 },
-  { key: 'actualResult', label: '实际赛果', group: 'actual', defaultWidth: 122 },
-  { key: 'completionStatus', label: '状态', group: 'actual', defaultWidth: 96 },
-  { key: 'claudePredictedScore1', label: 'Claude比分1', group: 'claude', defaultWidth: 132 },
-  { key: 'claudePredictedScore2', label: 'Claude比分2', group: 'claude', defaultWidth: 132 },
-  { key: 'claudePredictedScore3', label: 'Claude比分3', group: 'claude', defaultWidth: 132 },
-  { key: 'claudeWdlPrediction', label: 'Claude胜平负主推', group: 'claude', defaultWidth: 138 },
-  { key: 'claudeAnyScoreHit', label: 'Claude比分命中', group: 'claude', defaultWidth: 126 },
-  { key: 'claudeWdlHit', label: 'Claude赛果命中', group: 'claude', defaultWidth: 126 },
-  { key: 'chatgptWdlPrediction', label: 'ChatGPT胜平负主推', group: 'gpt', defaultWidth: 138 },
-  { key: 'chatgptActualWinner', label: '实际胜方', group: 'actual', defaultWidth: 158 },
-  { key: 'chatgptWdlHit', label: 'ChatGPT赛果命中', group: 'gpt', defaultWidth: 132 },
-  { key: 'chatgptAnyScoreHit', label: 'ChatGPT比分命中', group: 'gpt', defaultWidth: 132 },
-  { key: 'chatgptPredictedScore1', label: 'ChatGPT比分1', group: 'gpt', defaultWidth: 138 },
-  { key: 'chatgptPredictedScore2', label: 'ChatGPT比分2', group: 'gpt', defaultWidth: 138 },
-  { key: 'chatgptPredictedScore3', label: 'ChatGPT比分3', group: 'gpt', defaultWidth: 138 },
-  { key: 'predictionDisagreement', label: '预测分歧', group: 'extra', defaultWidth: 88 },
-  { key: 'notes', label: '备注', group: 'extra', defaultWidth: 160, lowFrequency: true },
-  { key: 'oddsSource', label: '赔率来源', group: 'extra', defaultWidth: 130, lowFrequency: true },
-  { key: 'preMatchNotes', label: '赛前备注', group: 'extra', defaultWidth: 180, lowFrequency: true },
-  { key: 'postMatchReview', label: '赛后复盘', group: 'extra', defaultWidth: 180, lowFrequency: true },
-  { key: 'focusLevel', label: '关注级别', group: 'extra', defaultWidth: 96, lowFrequency: true },
+  { key: 'chatgptWdlPrediction', label: 'ChatGPT胜平负主推', group: 'gpt', defaultWidth: 118 },
+  { key: 'chatgptPredictedScore1', label: 'ChatGPT比分1', group: 'gpt', defaultWidth: 92 },
+  { key: 'chatgptPredictedScore2', label: 'ChatGPT比分2', group: 'gpt', defaultWidth: 92 },
+  { key: 'chatgptPredictedScore3', label: 'ChatGPT比分3', group: 'gpt', defaultWidth: 92 },
+  { key: 'chatgptWdlHit', label: 'ChatGPT赛果命中', group: 'gpt', defaultWidth: 90 },
+  { key: 'chatgptAnyScoreHit', label: 'ChatGPT比分命中', group: 'gpt', defaultWidth: 90 },
+  { key: 'matchNo', label: '场次', group: 'base', defaultWidth: 56 },
+  { key: 'round', label: '轮次', group: 'base', defaultWidth: 82 },
+  { key: 'homeTeam', label: '主队', group: 'base', defaultWidth: 108 },
+  { key: 'awayTeam', label: '客队', group: 'base', defaultWidth: 108 },
+  { key: 'australiaTime', label: '澳洲时间(AEST)', group: 'base', defaultWidth: 136 },
+  { key: 'group', label: '组', group: 'base', defaultWidth: 50 },
+  { key: 'city', label: '城市', group: 'base', defaultWidth: 108 },
+  { key: 'actualScore', label: '实际比分', group: 'actual', defaultWidth: 78 },
+  { key: 'actualResult', label: '实际赛果', group: 'actual', defaultWidth: 88 },
+  { key: 'completionStatus', label: '状态', group: 'actual', defaultWidth: 76 },
+  { key: 'claudeWdlPrediction', label: 'Claude胜平负主推', group: 'claude', defaultWidth: 116 },
+  { key: 'claudePredictedScore1', label: 'Claude比分1', group: 'claude', defaultWidth: 90 },
+  { key: 'claudePredictedScore2', label: 'Claude比分2', group: 'claude', defaultWidth: 90 },
+  { key: 'claudePredictedScore3', label: 'Claude比分3', group: 'claude', defaultWidth: 90 },
+  { key: 'claudeWdlHit', label: 'Claude赛果命中', group: 'claude', defaultWidth: 88 },
+  { key: 'claudeAnyScoreHit', label: 'Claude比分命中', group: 'claude', defaultWidth: 88 },
+  { key: 'chatgptActualWinner', label: '实际胜方', group: 'actual', defaultWidth: 110 },
+  { key: 'predictionDisagreement', label: '预测分歧', group: 'extra', defaultWidth: 82 },
+  { key: 'notes', label: '备注', group: 'extra', defaultWidth: 140, lowFrequency: true },
+  { key: 'oddsSource', label: '赔率来源', group: 'extra', defaultWidth: 116, lowFrequency: true },
+  { key: 'preMatchNotes', label: '赛前备注', group: 'extra', defaultWidth: 150, lowFrequency: true },
+  { key: 'postMatchReview', label: '赛后复盘', group: 'extra', defaultWidth: 150, lowFrequency: true },
+  { key: 'focusLevel', label: '关注级别', group: 'extra', defaultWidth: 86, lowFrequency: true },
 ];
 
 const defaultOrder = columns.map((column) => column.key);
@@ -111,9 +111,9 @@ export default function MatchTable({ matches, onOpen }: { matches: MatchPredicti
       <label>冻结列数量
         <select value={layout.frozenColumns} onChange={(event) => persist({ ...layout, frozenColumns: Number(event.target.value) })}>
           <option value={0}>不冻结</option>
-          <option value={3}>场次 / 轮次 / 主队</option>
-          <option value={4}>场次 / 轮次 / 主队 / 客队</option>
-          <option value={7}>基础信息区</option>
+          <option value={4}>ChatGPT 主推 + 比分</option>
+          <option value={7}>ChatGPT 主推/比分 + 场次</option>
+          <option value={10}>ChatGPT 区 + 场次/轮次/主队/客队</option>
         </select>
       </label>
       <details>
