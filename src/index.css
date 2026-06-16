@@ -37,13 +37,13 @@ main {
   justify-content:space-between;
   align-items:stretch;
   gap:28px;
-  min-height:210px;
-  padding:28px;
+  min-height:290px;
+  padding:32px;
   isolation:isolate;
   background:
-    radial-gradient(circle at 78% 20%,#f8d88955 0 8%,transparent 23%),
-    radial-gradient(circle at 16% 28%,#bfdbfe70 0 12%,transparent 30%),
-    linear-gradient(135deg,#fbfdff 0%,#edf8fb 43%,#e3f5ee 100%)
+    radial-gradient(circle at 82% 18%,#f8d88985 0 10%,transparent 25%),
+    radial-gradient(circle at 15% 26%,#bfdbfe8a 0 13%,transparent 31%),
+    linear-gradient(135deg,#fbfdff 0%,#e8f7fb 41%,#d9f3ec 100%)
 }
 
 .heroTop:before {
@@ -71,14 +71,22 @@ main {
   content:"";
   position:absolute;
   inset:0;
-  background:linear-gradient(90deg,#ffffffd8 0 35%,#ffffff70 54%,#f8fafcdd 100%);
+  background:linear-gradient(90deg,#fffffff2 0 36%,#ffffff8f 54%,#f8fafcc4 100%);
   z-index:4
 }
 
 .heroCopy {
   position:relative;
   z-index:5;
-  max-width:860px;
+  max-width:780px;
+  flex:1 1 720px;
+  align-self:center;
+  padding:22px 24px;
+  border:1px solid #ffffffaa;
+  border-radius:24px;
+  background:linear-gradient(90deg,#fffffff0 0%,#f8fbffcc 74%,#f8fbff66 100%);
+  box-shadow:0 18px 46px #24415a18;
+  backdrop-filter:blur(7px);
   display:flex;
   flex-direction:column;
   justify-content:center
@@ -114,7 +122,7 @@ h1 {
 
 .heroCopy h1 {
   max-width:820px;
-  font-size:clamp(30px,4vw,54px);
+  font-size:clamp(32px,3.25vw,48px);
   line-height:1.05;
   letter-spacing:-.04em;
   text-shadow:0 2px 0 #ffffffcc
@@ -151,7 +159,7 @@ h1 {
 .worldCupArt {
   position:relative;
   z-index:5;
-  min-width:270px;
+  min-width:330px;
   display:flex;
   align-items:center;
   justify-content:center
@@ -159,8 +167,8 @@ h1 {
 
 .hostFocus {
   position:absolute;
-  top:18px;
-  right:4px;
+  top:20px;
+  right:10px;
   padding:7px 10px;
   border:1px solid #f2cf82;
   border-radius:999px;
@@ -172,27 +180,63 @@ h1 {
   backdrop-filter:blur(4px)
 }
 
+.hostInfoCard {
+  position:absolute;
+  right:0;
+  bottom:18px;
+  z-index:4;
+  min-width:170px;
+  padding:12px 14px;
+  border:1px solid #b8d6f2;
+  border-radius:18px;
+  background:#ffffffd9;
+  color:#0f2a44;
+  box-shadow:0 18px 32px #24415a1f;
+  backdrop-filter:blur(6px)
+}
+
+.hostInfoCard b,.hostInfoCard span,.hostInfoCard small {
+  display:block
+}
+
+.hostInfoCard b {
+  color:#0f766e;
+  font-size:13px
+}
+
+.hostInfoCard span {
+  margin-top:3px;
+  font-weight:800
+}
+
+.hostInfoCard small {
+  margin-top:3px;
+  color:#64748b;
+  font-weight:700
+}
+
 .trophy {
   position:relative;
   z-index:2;
-  font-size:70px;
+  margin-top:34px;
+  font-size:88px;
   filter:drop-shadow(0 18px 18px #92400e28)
 }
 
 .ball {
   position:absolute;
-  right:34px;
-  bottom:30px;
+  right:42px;
+  bottom:44px;
   z-index:3;
-  font-size:32px;
+  font-size:38px;
   filter:drop-shadow(0 10px 14px #0f766e24)
 }
 
 .pitchLine {
   position:absolute;
-  width:220px;
-  height:108px;
-  border:2px solid #0f766e2b;
+  width:276px;
+  height:134px;
+  border:3px solid #0f766e45;
   border-radius:999px;
   background:radial-gradient(ellipse at center,#ffffff00 0 38%,#ffffff55 39% 40%,transparent 42%)
 }
@@ -201,51 +245,75 @@ h1 {
   position:absolute;
   left:0;
   right:0;
-  bottom:-6px;
+  bottom:-2px;
   width:100%;
-  height:72%;
+  height:78%;
   z-index:2;
-  opacity:.56
+  opacity:.88
 }
 
 .skylineFill {
-  fill:#6b8ca180
+  fill:#456b7d47
 }
 
 .bridgeLine,.stadiumGlow,.liberty {
   fill:none;
-  stroke:#277d8a80;
-  stroke-width:4;
+  stroke:#1f6f7eaa;
+  stroke-width:5;
   stroke-linecap:round;
   stroke-linejoin:round
 }
 
 .stadiumGlow {
-  stroke:#d6a43699;
-  stroke-width:5;
+  stroke:#d6a436cc;
+  stroke-width:7;
   filter:drop-shadow(0 0 10px #facc15aa)
 }
 
 .stadiumArc {
   position:absolute;
-  right:118px;
-  bottom:26px;
-  width:360px;
-  height:86px;
-  border:2px solid #0f766e20;
-  border-top-color:#0f766e58;
+  right:160px;
+  bottom:32px;
+  width:450px;
+  height:112px;
+  border:3px solid #0f766e35;
+  border-top-color:#0f766e82;
   border-radius:50% 50% 12px 12px;
   background:linear-gradient(180deg,#ecfeff44,transparent);
   z-index:3
 }
 
+
+.venueTags {
+  position:absolute;
+  right:365px;
+  bottom:118px;
+  z-index:4;
+  display:flex;
+  gap:8px;
+  flex-wrap:wrap;
+  max-width:360px
+}
+
+.venueTags span {
+  padding:6px 9px;
+  border:1px solid #8bd3c7aa;
+  border-radius:999px;
+  background:#ecfeffcc;
+  color:#0f766e;
+  font-size:11px;
+  font-weight:900;
+  letter-spacing:.06em;
+  box-shadow:0 8px 18px #0f766e16
+}
+
 .ballTrail {
   position:absolute;
-  right:210px;
-  top:34px;
-  width:330px;
-  height:150px;
-  border-top:2px dashed #d6a43675;
+  right:230px;
+  top:36px;
+  width:420px;
+  height:180px;
+  border-top:3px dashed #d6a436ba;
   border-radius:50%;
   transform:rotate(-12deg);
   z-index:3
@@ -265,12 +333,14 @@ h1 {
 
 .starLayer {
   position:absolute;
-  bottom:3px;
+  bottom:16px;
   width:168px;
-  height:250px;
-  opacity:.14;
-  filter:blur(.2px) saturate(.5);
-  background:linear-gradient(180deg,#31566f 0%,#4b7283 100%);
+  height:238px;
+  opacity:.32;
+  filter:saturate(.72);
+  background:linear-gradient(180deg,#dff7ff 0%,#7ea7b8 18%,#31566f 100%);
+  border:1px solid #dff7ff9a;
+  box-shadow:0 18px 36px #164e6336, inset 0 1px 18px #ffffff4f;
   clip-path:polygon(46% 0,58% 4%,64% 13%,62% 24%,75% 31%,84% 48%,78% 68%,68% 66%,72% 100%,28% 100%,32% 66%,22% 68%,16% 48%,25% 31%,38% 24%,36% 13%);
   z-index:1
 }
@@ -281,7 +351,7 @@ h1 {
   inset:58px 34px 0;
   border-radius:44% 44% 0 0;
   background:linear-gradient(180deg,#7ba2b2 0%,#42697d 100%);
-  opacity:.68
+  opacity:.78
 }
 
 .starLayer span {
@@ -289,29 +359,46 @@ h1 {
   left:50%;
   top:112px;
   transform:translateX(-50%);
-  color:#e0f2fe;
-  font-size:44px;
+  color:#f8fbff;
+  font-size:52px;
   font-weight:900;
   letter-spacing:-.08em;
-  opacity:.62
+  opacity:.9
+}
+
+.starLayer strong {
+  position:absolute;
+  left:18px;
+  right:18px;
+  bottom:22px;
+  padding:7px 8px;
+  border:1px solid #ffffff80;
+  border-radius:999px;
+  background:#0f2a4466;
+  color:#f8fbff;
+  font-size:13px;
+  letter-spacing:.04em;
+  text-align:center;
+  text-transform:uppercase;
+  backdrop-filter:blur(4px)
 }
 
 .messi {
-  left:29%;
-  transform:translateX(-50%) scale(.98) rotate(-4deg)
+  left:48%;
+  transform:translateX(-50%) scale(1.02) rotate(-5deg)
 }
 
 .mbappe {
-  left:54%;
+  left:62%;
   width:190px;
-  height:275px;
-  opacity:.11;
-  transform:translateX(-50%) scale(1.06)
+  height:270px;
+  opacity:.36;
+  transform:translateX(-50%) scale(1.08)
 }
 
 .ronaldo {
   left:76%;
-  transform:translateX(-50%) scale(1.02) rotate(4deg)
+  transform:translateX(-50%) scale(1.04) rotate(5deg)
 }
 
 .cards {

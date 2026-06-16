@@ -1,9 +1,9 @@
 export default function TopNav() {
   return <header className="top heroTop">
     <div className="heroBackdrop" aria-hidden="true">
-      <div className="starLayer messi"><span>10</span></div>
-      <div className="starLayer mbappe"><span>7</span></div>
-      <div className="starLayer ronaldo"><span>7</span></div>
+      <div className="starLayer messi"><strong>Messi</strong><span>10</span></div>
+      <div className="starLayer mbappe"><strong>Mbappé</strong><span>10</span></div>
+      <div className="starLayer ronaldo"><strong>Ronaldo</strong><span>7</span></div>
       <svg className="nySkyline" viewBox="0 0 900 170" role="img" aria-label="New York skyline and stadium silhouette">
         <path className="bridgeLine" d="M36 126 C150 60 264 60 378 126 M522 126 C636 60 750 60 864 126" />
         <path className="stadiumGlow" d="M276 137 C352 97 548 97 624 137" />
@@ -11,6 +11,7 @@ export default function TopNav() {
         <path className="liberty" d="M111 150V116h10l4-32 4 32h10v34m-20-35-13-17m26 17 16-24m-26-8-10-14m13 14 5-20m-1 20 12-16" />
       </svg>
       <div className="stadiumArc" />
+      <div className="venueTags"><span>NY/NJ HOST CITY</span><span>MetLife Stadium</span><span>New York Spotlight</span></div>
       <div className="ballTrail" />
     </div>
 
@@ -24,6 +25,7 @@ export default function TopNav() {
     </div>
     <div className="worldCupArt" aria-hidden="true">
       <span className="hostFocus">Host Focus: New York</span>
+      <div className="hostInfoCard"><b>2026 World Cup</b><span>New York / New Jersey</span><small>Prediction Tracker</small></div>
       <span className="trophy">🏆</span>
       <span className="ball">⚽</span>
       <div className="pitchLine" />
