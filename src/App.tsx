@@ -66,9 +66,13 @@ export default function App(){
       const now = new Date().toLocaleString('zh-CN', { hour12: false });
       setLastResultsUpdate(now);
       console.debug('ESPN 赛果更新诊断', stats);
-      setMessage(stats.updatedMatches.length
+      const match18Diagnostic = stats.focusDiagnostics.find((diagnostic) => diagnostic.matchNo === 18);
+      const match18Message = match18Diagnostic && match18Diagnostic.reason !== '已更新'
+        ? `matchNo 18 伊拉克 vs 挪威：${match18Diagnostic.reason.replace('ESPN 返回该比赛但状态未完赛', '未完赛').replace('ESPN 返回但状态未完赛', '未完赛').replace('ESPN 返回比分无效', '比分无效').replace('ESPN 未返回该比赛', 'ESPN 未返回')}。`
+        : '';
+      setMessage(`${stats.updatedMatches.length
         ? `本次更新：${stats.updatedMatches.map((match) => `${match.matchNo} ${match.label} ${match.score}`).join('；')}。`
-        : '无新场次更新');
+        : '无新场次更新。'}${match18Message}`);
     } catch (error) {
       console.debug('ESPN 赛果更新诊断', { error, espnReturned: 0, espnCompleted: 0, espnUnfinished: 0, updated: 0, espnMissing: matches.length, matchFailed: 0 });
       setMessage(`ESPN 赛果数据源失败：${error instanceof Error ? error.message : '未知错误'}。`);

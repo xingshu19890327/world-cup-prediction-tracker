@@ -46,9 +46,10 @@ const aliasEntries: [string, string][] = [
   ['墨西哥', 'mexico'], ['南非', 'southafrica'], ['韩国', 'korea'], ['捷克', 'czechia'], ['加拿大', 'canada'],
   ['波黑', 'bosniaherzegovina'], ['美国', 'unitedstates'], ['巴拉圭', 'paraguay'], ['土耳其', 'turkey'],
   ['瑞士', 'switzerland'], ['巴西', 'brazil'], ['摩洛哥', 'morocco'], ['苏格兰', 'scotland'], ['海地', 'haiti'],
-  ['德国', 'germany'], ['库拉索', 'curacao'], ['法国', 'france'], ['挪威', 'norway'], ['卡塔尔', 'qatar'],
+  ['德国', 'germany'], ['库拉索', 'curacao'], ['法国', 'france'], ['挪威', 'norway'], ['norway', 'norway'], ['nor', 'norway'], ['卡塔尔', 'qatar'],
   ['加纳', 'ghana'], ['科特迪瓦', 'ivorycoast'], ['厄瓜多尔', 'ecuador'], ['澳大利亚', 'australia'],
   ['伊朗', 'iran'], ['iran', 'iran'], ['ir iran', 'iran'], ['islamic republic of iran', 'iran'], ['irn', 'iran'],
+  ['伊拉克', 'iraq'], ['iraq', 'iraq'], ['irq', 'iraq'],
   ['瑞典', 'sweden'], ['sweden', 'sweden'], ['swe', 'sweden'],
   ['突尼斯', 'tunisia'], ['tunisia', 'tunisia'], ['tun', 'tunisia'],
   ['西班牙', 'spain'], ['spain', 'spain'], ['esp', 'spain'],
@@ -159,22 +160,19 @@ export const applyEspnResults = (rows: MatchPrediction[], results: SourceResult[
 
     matchedIndexes.add(found.index);
     const current = nextRows[found.index];
-    if (!result.completed) {
-      nextRows[found.index] = recalculateMatch({ ...current, actualScore: '', actualResult: '', completionStatus: '未赛' });
-      continue;
-    }
+    if (!result.completed) continue;
     if (!result.score || !Number.isFinite(result.score.home) || !Number.isFinite(result.score.away)) continue;
 
     const homeScore = found.direction === 'normal' ? result.score.home : result.score.away;
     const awayScore = found.direction === 'normal' ? result.score.away : result.score.home;
     const nextScore = `${homeScore}-${awayScore}`;
-    if (current.actualScore.trim() === nextScore) continue;
     nextRows[found.index] = recalculateMatch({ ...current, actualScore: nextScore });
+    if (current.actualScore.trim() === nextScore) continue;
     stats.updated += 1;
     stats.updatedMatches.push({ matchNo: current.matchNo, label: `${current.homeTeam} vs ${current.awayTeam}`, score: nextScore });
   }
 
-  const focusMatches = rows.filter((match) => match.matchNo === 12 || match.matchNo === 13);
+  const focusMatches = rows.filter((match) => match.matchNo === 12 || match.matchNo === 13 || match.matchNo === 18);
   stats.focusDiagnostics = focusMatches.map((match) => {
     const updated = nextRows.find((row) => row.matchNo === match.matchNo)?.actualScore.trim();
     const diagnostic = updated ? { reason: '已更新' as FocusReason, candidates: [] } : diagnoseMatch(match, results);
