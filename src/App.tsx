@@ -68,9 +68,15 @@ export default function App(){
       const now = new Date().toLocaleString('zh-CN', { hour12: false });
       setLastResultsUpdate(now);
       console.debug('ESPN 赛果更新诊断', stats);
-      setMessage(stats.updatedMatches.length
-        ? `本次更新：${stats.updatedMatches.map((match) => `${match.matchNo} ${match.label} ${match.score}`).join('；')}。`
-        : '无新场次更新');
+      const failMsg = stats.matchFailureSamples.length
+        ? `  ⚠️ 以下 ${stats.matchFailureSamples.length} 场未能自动匹配（可手动填写）：${stats.matchFailureSamples.map(s => `#${s.matchNo} ${s.homeTeam} vs ${s.awayTeam}`).join('、')}`
+        : '';
+      setMessage(
+        (stats.updatedMatches.length
+          ? `本次更新：${stats.updatedMatches.map((match) => `${match.matchNo} ${match.label} ${match.score}`).join('；')}。`
+          : '无新场次更新。')
+        + failMsg
+      );
     } catch (error) {
       console.debug('ESPN 赛果更新诊断', { error, espnReturned: 0, espnCompleted: 0, espnUnfinished: 0, updated: 0, espnMissing: matches.length, matchFailed: 0 });
       setMessage(`ESPN 赛果数据源失败：${error instanceof Error ? error.message : '未知错误'}。`);

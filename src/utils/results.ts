@@ -59,6 +59,12 @@ const aliasEntries: [string, string][] = [
   ['克罗地亚', 'croatia'], ['日本', 'japan'], ['荷兰', 'netherlands'], ['新西兰', 'newzealand'], ['new zealand', 'newzealand'], ['nzl', 'newzealand'],
   ['埃及', 'egypt'], ['比利时', 'belgium'], ['牙买加', 'jamaica'], ['哥伦比亚', 'colombia'], ['尼日利亚', 'nigeria'],
   ['乌拉圭', 'uruguay'], ['约旦', 'jordan'], ['塞内加尔', 'senegal'], ['葡萄牙', 'portugal'], ['乌兹别克斯坦', 'uzbekistan'], ['阿尔及利亚', 'algeria'],
+  // 补全缺失的中文→ESPN英文映射（compactTeam 会清除中文字符，必须显式 alias）
+  ['伊拉克', 'iraq'], ['iraq', 'iraq'],
+  ['巴拿马', 'panama'], ['panama', 'panama'],
+  ['刚果', 'congo'],
+  ['congo', 'congo'], ['republic of congo', 'congo'], ['congo brazzaville', 'congo'],
+  ['congo republic', 'congo'], ['republicofcongo', 'congo'],
 ];
 const teamAliases = Object.fromEntries(aliasEntries.map(([key, value]) => [key.toLowerCase(), value]));
 
