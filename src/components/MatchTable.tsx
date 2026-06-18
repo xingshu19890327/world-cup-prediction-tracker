@@ -49,6 +49,8 @@ const filterableKeys = new Set<keyof MatchPrediction>([
 ]);
 const blankValueLabel = '空白';
 const filterValue = (value: unknown) => String(value ?? '').trim() || blankValueLabel;
+const displayValue = (match: MatchPrediction, key: keyof MatchPrediction): string =>
+  (key === 'homeTeam' || key === 'awayTeam') ? matchTeamDisplayName(match, key) : String(match[key] ?? '');
 
 const actualResultKeys: (keyof MatchPrediction)[] = ['actualScore', 'actualResult', 'completionStatus', 'chatgptActualWinner'];
 
