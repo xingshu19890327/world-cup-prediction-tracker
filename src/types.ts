@@ -15,6 +15,8 @@ export type MatchPrediction = {
   actualScore: string;
   actualResult: WdlResult | '';
   completionStatus: CompletionStatus;
+  homeCorners: string | number;
+  awayCorners: string | number;
   claudePredictedScore1: string;
   claudePredictedScore2: string;
   claudePredictedScore3: string;

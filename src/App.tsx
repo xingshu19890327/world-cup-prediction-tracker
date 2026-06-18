@@ -11,6 +11,7 @@ import MatchTable from './components/MatchTable';
 import MatchEditor from './components/MatchEditor';
 import InfoPanel from './components/InfoPanel';
 import TrendChart from './components/TrendChart';
+import CornerStats from './components/CornerStats';
 const defaultFilters: FiltersState = { round:'全部', group:'全部', completion:'全部', hit:'全部', team:'', city:'', quick:'全部' };
 const blankValueLabel = '空白';
 const columnFilterValue = (value: unknown) => String(value ?? '').trim() || blankValueLabel;
@@ -112,6 +113,7 @@ export default function App(){
       <TopNav/>
       <DashboardCards matches={matches}/>
       <TrendChart matches={matches}/>
+      <CornerStats matches={matches}/>
       {message && <div className="msg">{message}</div>}
       <ImportExportPanel
         onRecalc={() => setAndSave(matches.map(recalculateMatch))}
