@@ -64,7 +64,12 @@ const aliasEntries: [string, string][] = [
   ['巴拿马', 'panama'], ['panama', 'panama'],
   ['刚果', 'congo'],
   ['congo', 'congo'], ['republic of congo', 'congo'], ['congo brazzaville', 'congo'],
-  ['congo republic', 'congo'], ['republicofcongo', 'congo'],
+  ['congo republic', 'congo'], ['republicofcongo', 'congo'], ['congo-brazzaville', 'congo'],
+  ['rep. congo', 'congo'], ['rep congo', 'congo'], ['cgo', 'congo'], ['rco', 'congo'], ['con', 'congo'],
+  // 同时把刚果民主共和国(DR Congo)的各种写法也归到同一支"刚果"，避免 ESPN 用哪种都匹配失败
+  ['dr congo', 'congo'], ['drcongo', 'congo'], ['congo dr', 'congo'], ['congodr', 'congo'],
+  ['dr. congo', 'congo'], ['democratic republic of congo', 'congo'], ['drc', 'congo'],
+  ['cod', 'congo'], ['congo kinshasa', 'congo'], ['congo-kinshasa', 'congo'],
 ];
 const teamAliases = Object.fromEntries(aliasEntries.map(([key, value]) => [key.toLowerCase(), value]));
 
