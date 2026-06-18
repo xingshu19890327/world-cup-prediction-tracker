@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import type { ColumnFiltersState, MatchPrediction } from '../types';
 import { clearTableLayout, loadTableLayout, saveTableLayout } from '../utils/storage';
+import { matchTeamDisplayName } from '../utils/teamDisplay';
 
 export type TableColumn = { key: keyof MatchPrediction; label: string; fullLabel?: string; group: string; defaultWidth: number; minWidth?: number; maxWidth?: number; lowFrequency?: boolean };
 
@@ -13,8 +14,8 @@ const columns: TableColumn[] = [
   { key: 'chatgptAnyScoreHit', label: '比分中', fullLabel: 'ChatGPT比分命中', group: 'gpt', defaultWidth: 72, minWidth: 64, maxWidth: 92 },
   { key: 'matchNo', label: '场次', group: 'base', defaultWidth: 48, minWidth: 44, maxWidth: 58 },
   { key: 'round', label: '轮次', group: 'base', defaultWidth: 70, minWidth: 62, maxWidth: 100 },
-  { key: 'homeTeam', label: '主队', group: 'base', defaultWidth: 95, minWidth: 82, maxWidth: 128 },
-  { key: 'awayTeam', label: '客队', group: 'base', defaultWidth: 95, minWidth: 82, maxWidth: 128 },
+  { key: 'homeTeam', label: '主队', group: 'base', defaultWidth: 118, minWidth: 92, maxWidth: 190 },
+  { key: 'awayTeam', label: '客队', group: 'base', defaultWidth: 118, minWidth: 92, maxWidth: 190 },
   { key: 'australiaTime', label: '澳洲时间(AEST)', group: 'base', defaultWidth: 135, minWidth: 120, maxWidth: 165 },
   { key: 'group', label: '组', group: 'base', defaultWidth: 42, minWidth: 38, maxWidth: 52 },
   { key: 'city', label: '城市', group: 'base', defaultWidth: 95, minWidth: 82, maxWidth: 128 },
@@ -50,6 +51,11 @@ const blankValueLabel = '空白';
 const filterValue = (value: unknown) => String(value ?? '').trim() || blankValueLabel;
 
 const actualResultKeys: (keyof MatchPrediction)[] = ['actualScore', 'actualResult', 'completionStatus', 'chatgptActualWinner'];
+
+const displayValue = (match: MatchPrediction, key: keyof MatchPrediction) => {
+  if (key === 'homeTeam' || key === 'awayTeam') return matchTeamDisplayName(match, key);
+  return String(match[key] ?? '');
+};
 
 export default function MatchTable({ matches, allMatches, columnFilters, onColumnFiltersChange, onOpen }: { matches: MatchPrediction[]; allMatches: MatchPrediction[]; columnFilters: ColumnFiltersState; onColumnFiltersChange:(filters:ColumnFiltersState)=>void; onOpen:(m:MatchPrediction)=>void }) {
   const [layout, setLayout] = useState(loadTableLayout);
@@ -115,7 +121,7 @@ export default function MatchTable({ matches, allMatches, columnFilters, onColum
   const calculateAutoWidths = (sourceColumns = orderedColumns, sourceMatches = matches) => {
     const sampleRows = sourceMatches.slice(0, 40);
     return sourceColumns.reduce<Record<string, number>>((widths, column) => {
-      const values = sampleRows.map((match) => String(match[column.key] ?? ''));
+      const values = sampleRows.map((match) => displayValue(match, column.key));
       const longest = values.reduce((max, value) => Math.max(max, [...value].reduce((sum, char) => sum + (char.charCodeAt(0) > 255 ? 12 : 7), 0)), 0);
       const filterSpace = filterableKeys.has(column.key) ? 24 : 10;
       widths[column.key] = clampWidth(column, Math.max(column.defaultWidth, Math.ceil(longest + filterSpace + 18)));
@@ -309,7 +315,7 @@ export default function MatchTable({ matches, allMatches, columnFilters, onColum
                 const frozen = index < layout.frozenColumns;
                 const width = widthForColumn(column);
                 const style = frozen ? { left: leftOffsets[index], width, minWidth: width } : { width, minWidth: width };
-                const value = String(match[column.key] ?? '');
+                const value = displayValue(match, column.key);
                 const pendingActual = isPending && actualResultKeys.includes(column.key);
                 const completedActual = isCompleted && actualResultKeys.includes(column.key);
                 const hitClass = value === '✓' ? 'ok' : value === '×' ? 'bad' : '';
@@ -317,6 +323,7 @@ export default function MatchTable({ matches, allMatches, columnFilters, onColum
                   key={column.key}
                   className={`${column.group} ${frozen ? 'frozen' : ''} ${completedActual ? 'actualCompleted' : ''} ${pendingActual ? 'actualPending' : ''} ${hitClass}`}
                   style={style}
+                  title={value}
                 >
                   {column.key === 'completionStatus' && (isCompleted || isPending)
                     ? <span className={`statusBadge ${isCompleted ? 'statusDone' : 'statusPending'}`}>{value}</span>
