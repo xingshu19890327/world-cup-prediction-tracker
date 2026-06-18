@@ -70,12 +70,11 @@ try {
   const referenceByMatchNo = new Map(referenceRows.map((row) => [row.matchNo, row]));
   const mismatches = [];
 
-  const groupStageSeedRows = seedMatches.filter((row) => row.matchNo >= 1 && row.matchNo <= 72);
-  if (groupStageSeedRows.length !== 72) {
-    mismatches.push({ matchNo: '<1-72>', field: '<row-count>', reference: 72, seed: groupStageSeedRows.length });
+  if (seedMatches.length !== referenceRows.length) {
+    mismatches.push({ matchNo: '<all>', field: '<row-count>', reference: referenceRows.length, seed: seedMatches.length });
   }
 
-  for (const seedRow of groupStageSeedRows) {
+  for (const seedRow of seedMatches) {
     const referenceRow = referenceByMatchNo.get(seedRow.matchNo);
     if (!referenceRow) {
       mismatches.push({ matchNo: seedRow.matchNo, field: '<row>', reference: '<missing>', seed: '<present>' });
@@ -102,7 +101,7 @@ try {
     process.exit(1);
   }
 
-  console.log(`✅ reference alignment validation passed: 72 group-stage seedMatches rows match reference values by matchNo.`);
+  console.log(`✅ reference alignment validation passed: all 104 seedMatches rows match reference values by matchNo, including model prediction fields.`);
 } finally {
   rmSync(tmpRoot, { recursive: true, force: true });
 }

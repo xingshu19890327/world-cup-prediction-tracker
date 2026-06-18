@@ -10,6 +10,35 @@ const HIDDEN_COLUMNS_KEY = 'hiddenColumns';
 const FROZEN_COLUMNS_KEY = 'frozenColumns';
 const COLUMN_FILTERS_KEY = 'columnFilters';
 
+const modelPredictionFields = [
+  'claudePredictedScore1',
+  'claudePredictedScore2',
+  'claudePredictedScore3',
+  'claudeWdlPrediction',
+  'chatgptWdlPrediction',
+  'chatgptPredictedScore1',
+  'chatgptPredictedScore2',
+  'chatgptPredictedScore3',
+] as const satisfies readonly (keyof MatchPrediction)[];
+
+const isBlank = (value: unknown) => String(value ?? '').trim() === '';
+const seedByMatchNo = new Map(seedMatches.map((match) => [match.matchNo, match]));
+
+const restoreMissingSeedPredictions = (match: MatchPrediction): MatchPrediction => {
+  const seed = seedByMatchNo.get(match.matchNo);
+  if (!seed) return match;
+
+  const restored: MatchPrediction = { ...match };
+  for (const field of modelPredictionFields) {
+    if (isBlank(restored[field]) && !isBlank(seed[field])) {
+      (restored[field] as MatchPrediction[typeof field]) = seed[field] as MatchPrediction[typeof field];
+    }
+  }
+  return restored;
+};
+
+const hydrateStoredMatch = (match: MatchPrediction): MatchPrediction => recalculateMatch(restoreMissingSeedPredictions(match));
+
 export const defaultTableLayout: TableLayoutState = {
   columnWidths: {},
   columnLabels: {},
@@ -21,7 +50,7 @@ export const defaultTableLayout: TableLayoutState = {
 export const loadMatches = () => {
   try {
     const raw = localStorage.getItem(KEY);
-    return raw ? (JSON.parse(raw) as MatchPrediction[]).map(recalculateMatch) : seedMatches;
+    return raw ? (JSON.parse(raw) as MatchPrediction[]).map(hydrateStoredMatch) : seedMatches;
   } catch {
     return seedMatches;
   }
