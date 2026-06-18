@@ -51,6 +51,18 @@ const filterValue = (value: unknown) => String(value ?? '').trim() || blankValue
 
 const actualResultKeys: (keyof MatchPrediction)[] = ['actualScore', 'actualResult', 'completionStatus', 'chatgptActualWinner'];
 
+const VALUE_ODDS_THRESHOLD = 2.5;
+// Claude 的胜平负主推映射到具体球队，便于与 ChatGPT 主推（球队名）比较
+const claudePickTeam = (m: MatchPrediction) =>
+  m.claudeWdlPrediction === '主胜' ? m.homeTeam : m.claudeWdlPrediction === '客胜' ? m.awayTeam : m.claudeWdlPrediction === '平局' ? '平局' : '';
+// 双方主推一致且对应赔率偏高 → 潜在高价值
+const isValueBet = (m: MatchPrediction) => {
+  const pick = claudePickTeam(m);
+  if (!pick || pick !== String(m.chatgptWdlPrediction ?? '').trim()) return false;
+  const odds = Number(m.claudeCorrespondingSbWdlOdds);
+  return Number.isFinite(odds) && odds >= VALUE_ODDS_THRESHOLD;
+};
+
 export default function MatchTable({ matches, allMatches, columnFilters, onColumnFiltersChange, onOpen }: { matches: MatchPrediction[]; allMatches: MatchPrediction[]; columnFilters: ColumnFiltersState; onColumnFiltersChange:(filters:ColumnFiltersState)=>void; onOpen:(m:MatchPrediction)=>void }) {
   const [layout, setLayout] = useState(loadTableLayout);
   const [dragKey, setDragKey] = useState<keyof MatchPrediction | null>(null);
@@ -300,9 +312,16 @@ export default function MatchTable({ matches, allMatches, columnFilters, onColum
           {matches.map((match) => {
             const isCompleted = match.completionStatus === '已完赛';
             const isPending = match.completionStatus === '未赛';
+            const claudeOnlyHit = match.claudeWdlHit === '✓' && match.chatgptWdlHit === '×';
+            const gptOnlyHit = match.chatgptWdlHit === '✓' && match.claudeWdlHit === '×';
+            const valueBet = isValueBet(match);
             return <tr
               key={match.id}
-              className={isCompleted ? 'matchCompleted' : isPending ? 'matchPending' : ''}
+              className={[
+                isCompleted ? 'matchCompleted' : isPending ? 'matchPending' : '',
+                claudeOnlyHit ? 'claudeOnlyHit' : '',
+                gptOnlyHit ? 'gptOnlyHit' : '',
+              ].filter(Boolean).join(' ')}
               onClick={() => onOpen(match)}
             >
               {orderedColumns.map((column, index) => {
@@ -320,7 +339,7 @@ export default function MatchTable({ matches, allMatches, columnFilters, onColum
                 >
                   {column.key === 'completionStatus' && (isCompleted || isPending)
                     ? <span className={`statusBadge ${isCompleted ? 'statusDone' : 'statusPending'}`}>{value}</span>
-                    : value}
+                    : <>{value}{column.key === 'claudeWdlPrediction' && valueBet && <span className="valueTag" title="双方主推一致且赔率偏高，潜在高价值">高价值</span>}</>}
                 </td>;
               })}
             </tr>;

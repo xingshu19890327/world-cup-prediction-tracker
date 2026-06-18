@@ -11,6 +11,8 @@ type SourceResult = {
   homeAbbreviation?: string;
   awayAbbreviation?: string;
   score?: { home: number; away: number } | null;
+  homeCorners?: number | null;
+  awayCorners?: number | null;
 };
 
 type MatchDirection = 'normal' | 'reversed';
@@ -168,8 +170,19 @@ export const applyEspnResults = (rows: MatchPrediction[], results: SourceResult[
     const homeScore = found.direction === 'normal' ? result.score.home : result.score.away;
     const awayScore = found.direction === 'normal' ? result.score.away : result.score.home;
     const nextScore = `${homeScore}-${awayScore}`;
-    if (current.actualScore.trim() === nextScore) continue;
-    nextRows[found.index] = recalculateMatch({ ...current, actualScore: nextScore });
+
+    // 角球：按主客方向映射，仅在本地尚未填写时写入，避免覆盖手动数据
+    const srcHomeCorners = found.direction === 'normal' ? result.homeCorners : result.awayCorners;
+    const srcAwayCorners = found.direction === 'normal' ? result.awayCorners : result.homeCorners;
+    const cornerPatch: Partial<MatchPrediction> = {};
+    if (Number.isFinite(srcHomeCorners) && String(current.homeCorners ?? '').trim() === '') cornerPatch.homeCorners = srcHomeCorners as number;
+    if (Number.isFinite(srcAwayCorners) && String(current.awayCorners ?? '').trim() === '') cornerPatch.awayCorners = srcAwayCorners as number;
+
+    if (current.actualScore.trim() === nextScore) {
+      if (Object.keys(cornerPatch).length) nextRows[found.index] = recalculateMatch({ ...current, ...cornerPatch });
+      continue;
+    }
+    nextRows[found.index] = recalculateMatch({ ...current, actualScore: nextScore, ...cornerPatch });
     stats.updated += 1;
     stats.updatedMatches.push({ matchNo: current.matchNo, label: `${current.homeTeam} vs ${current.awayTeam}`, score: nextScore });
   }

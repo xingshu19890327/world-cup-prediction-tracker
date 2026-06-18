@@ -11,7 +11,7 @@ type TeamStat = { team: string; continent: Continent; corners: number; matches: 
 type ContinentStat = { continent: Continent; corners: number; matches: number; teams: number };
 
 export default function CornerStats({ matches }: { matches: MatchPrediction[] }) {
-  const { teamStats, continentStats, totalCorners, dataMatches } = useMemo(() => {
+  const { teamStats, continentStats, totalCorners, dataMatches, avgRanking } = useMemo(() => {
     const teamMap = new Map<string, TeamStat>();
     let dataMatches = 0;
 
@@ -48,7 +48,11 @@ export default function CornerStats({ matches }: { matches: MatchPrediction[] })
       .filter((c): c is ContinentStat => Boolean(c));
 
     const totalCorners = teamStats.reduce((s, t) => s + t.corners, 0);
-    return { teamStats, continentStats, totalCorners, dataMatches };
+    const avgRanking = [...teamStats]
+      .map((t) => ({ ...t, avg: t.corners / t.matches }))
+      .sort((x, y) => y.avg - x.avg)
+      .slice(0, 10);
+    return { teamStats, continentStats, totalCorners, dataMatches, avgRanking };
   }, [matches]);
 
   if (dataMatches === 0) {
@@ -65,6 +69,7 @@ export default function CornerStats({ matches }: { matches: MatchPrediction[] })
   }
 
   const maxContCorners = Math.max(...continentStats.map((c) => c.corners), 1);
+  const maxAvg = Math.max(...avgRanking.map((t) => t.avg), 1);
 
   return (
     <section className="panel cornerStats">
@@ -95,6 +100,23 @@ export default function CornerStats({ matches }: { matches: MatchPrediction[] })
             </div>
           );
         })}
+      </div>
+
+      {/* 场均角球排行榜 Top 10 */}
+      <div className="cornerRanking">
+        <h4>场均角球排行榜 Top 10</h4>
+        <ol>
+          {avgRanking.map((t, i) => (
+            <li key={t.team}>
+              <span className="rankIdx">{i + 1}</span>
+              <span className="rankTeam" style={{ color: continentColors[t.continent] }}>{t.team}</span>
+              <div className="rankBarTrack">
+                <div className="rankBarFill" style={{ width: `${(t.avg / maxAvg) * 100}%`, background: continentColors[t.continent] }} />
+              </div>
+              <span className="rankAvg">{t.avg.toFixed(1)}</span>
+            </li>
+          ))}
+        </ol>
       </div>
 
       {/* 各队明细，按洲际分组 */}
