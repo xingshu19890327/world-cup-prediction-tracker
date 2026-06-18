@@ -69,7 +69,7 @@ export default function App(){
       setLastResultsUpdate(now);
       console.debug('ESPN 赛果更新诊断', stats);
       const failMsg = stats.matchFailureSamples.length
-        ? `  ⚠️ 以下 ${stats.matchFailureSamples.length} 场未能自动匹配（可手动填写）：${stats.matchFailureSamples.map(s => `#${s.matchNo} ${s.homeTeam} vs ${s.awayTeam}`).join('、')}`
+        ? `  ⚠️ 以下 ${stats.matchFailureSamples.length} 场仍为空：${stats.matchFailureSamples.map(s => `#${s.matchNo} ${s.homeTeam} vs ${s.awayTeam}〔${s.reason}${s.candidates.length ? `；ESPN候选：${s.candidates.join(' / ')}` : ''}〕`).join('；')}`
         : '';
       setMessage(
         (stats.updatedMatches.length

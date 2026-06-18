@@ -23,6 +23,7 @@ type MatchFailureSample = {
   homeTeam: string;
   awayTeam: string;
   australiaTime: string;
+  reason: FocusReason;
   candidates: string[];
 };
 
@@ -163,11 +164,6 @@ export const applyEspnResults = (rows: MatchPrediction[], results: SourceResult[
     const found = findMatch(nextRows, result);
     if (!found) {
       stats.matchFailed += 1;
-      const candidates = rows.filter((match) => sameDate(match, result)).slice(0, 3);
-      for (const match of candidates) {
-        if (failureSamples.size >= 5) break;
-        failureSamples.set(match.matchNo, { matchNo: match.matchNo, homeTeam: match.homeTeam, awayTeam: match.awayTeam, australiaTime: match.australiaTime, candidates: [describeResult(result)] });
-      }
       continue;
     }
 
@@ -203,13 +199,13 @@ export const applyEspnResults = (rows: MatchPrediction[], results: SourceResult[
     return { matchNo: match.matchNo, label: `${match.homeTeam} vs ${match.awayTeam}`, reason: diagnostic.reason };
   });
 
+  // 列出所有仍为空的过期比赛及其具体原因与 ESPN 候选队名（不再用 5 条上限掩盖真实问题）
   for (const match of blankPastMatches(nextRows)) {
-    if (failureSamples.size >= 5) break;
     const diagnostic = diagnoseMatch(match, results);
-    failureSamples.set(match.matchNo, { matchNo: match.matchNo, homeTeam: match.homeTeam, awayTeam: match.awayTeam, australiaTime: match.australiaTime, candidates: diagnostic.candidates.map(describeResult) });
+    failureSamples.set(match.matchNo, { matchNo: match.matchNo, homeTeam: match.homeTeam, awayTeam: match.awayTeam, australiaTime: match.australiaTime, reason: diagnostic.reason, candidates: diagnostic.candidates.map(describeResult) });
   }
 
-  stats.matchFailureSamples = [...failureSamples.values()].slice(0, 5);
+  stats.matchFailureSamples = [...failureSamples.values()].sort((a, b) => a.matchNo - b.matchNo);
   stats.espnMissing = rows.length - matchedIndexes.size;
   return { rows: nextRows, stats };
 };
