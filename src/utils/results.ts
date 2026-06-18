@@ -64,7 +64,8 @@ const aliasEntries: [string, string][] = [
   // 补全缺失的中文→ESPN英文映射（compactTeam 会清除中文字符，必须显式 alias）
   ['伊拉克', 'iraq'], ['iraq', 'iraq'],
   ['巴拿马', 'panama'], ['panama', 'panama'],
-  ['刚果', 'congo'],
+  ['刚果', 'congo'], ['刚果民主共和国', 'congo'], ['刚果（金）', 'congo'], ['刚果(金)', 'congo'],
+  ['刚果共和国', 'congo'], ['刚果（布）', 'congo'], ['刚果(布)', 'congo'],
   ['congo', 'congo'], ['republic of congo', 'congo'], ['congo brazzaville', 'congo'],
   ['congo republic', 'congo'], ['republicofcongo', 'congo'], ['congo-brazzaville', 'congo'],
   ['rep. congo', 'congo'], ['rep congo', 'congo'], ['cgo', 'congo'], ['rco', 'congo'], ['con', 'congo'],
