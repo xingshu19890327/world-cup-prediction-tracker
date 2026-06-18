@@ -976,3 +976,19 @@ th {
   text-overflow:ellipsis;
   white-space:nowrap
 }
+
+.sportsbetGpt {
+  background:#b91c1c
+}
+
+.sportsbetGpt:hover {
+  background:#7f1d1d
+}
+
+.sportsbetClaude {
+  background:#6d28d9
+}
+
+.sportsbetClaude:hover {
+  background:#4c1d95
+}

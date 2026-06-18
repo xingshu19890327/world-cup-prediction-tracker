@@ -11,16 +11,20 @@ type SharedProps = {
 type ActionProps = {
   onRecalc:()=>void;
   onUpdateResults:()=>void;
+  onFillSportsbetPrediction:(model:'chatgpt'|'claude')=>void;
+  updatingSportsbetModel:''|'chatgpt'|'claude';
   updatingResults:boolean;
   lastResultsUpdate:string;
 };
 
 const jsonFor = (matches: MatchPrediction[]) => JSON.stringify(matches, null, 2);
 
-export default function ImportExportPanel({ onRecalc, onUpdateResults, updatingResults, lastResultsUpdate }: ActionProps) {
+export default function ImportExportPanel({ onRecalc, onUpdateResults, onFillSportsbetPrediction, updatingSportsbetModel, updatingResults, lastResultsUpdate }: ActionProps) {
   return <section className="panel actions primaryActions">
     <button onClick={onRecalc}>更新结果 / 重新计算</button>
     <button onClick={onUpdateResults} disabled={updatingResults}>{updatingResults ? '正在更新赛果…' : '更新实际赛果'}</button>
+    <button className="sportsbetGpt" onClick={() => onFillSportsbetPrediction('chatgpt')} disabled={!!updatingSportsbetModel}>{updatingSportsbetModel === 'chatgpt' ? '正在抓取 Sportsbet…' : '用 Sportsbet 填入 ChatGPT 下一场预测'}</button>
+    <button className="sportsbetClaude" onClick={() => onFillSportsbetPrediction('claude')} disabled={!!updatingSportsbetModel}>{updatingSportsbetModel === 'claude' ? '正在抓取 Sportsbet…' : '用 Sportsbet 填入 Claude 下一场预测'}</button>
     {lastResultsUpdate && <span className="count">最后更新赛果时间：{lastResultsUpdate}</span>}
   </section>;
 }
