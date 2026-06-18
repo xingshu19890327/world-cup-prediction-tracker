@@ -11,6 +11,16 @@ const toNumber = (value) => {
   return Number.isFinite(number) ? number : null;
 };
 
+const cornersFor = (competitor) => {
+  const stats = Array.isArray(competitor?.statistics) ? competitor.statistics : [];
+  const found = stats.find((stat) => {
+    const name = String(stat?.name ?? '').toLowerCase();
+    const abbr = String(stat?.abbreviation ?? '').toLowerCase();
+    return name.includes('corner') || abbr === 'ck';
+  });
+  return found ? toNumber(found.displayValue ?? found.value) : null;
+};
+
 const parseEvent = (event) => {
   const competition = Array.isArray(event?.competitions) ? event.competitions[0] : null;
   const competitors = Array.isArray(competition?.competitors) ? competition.competitors : [];
@@ -29,6 +39,8 @@ const parseEvent = (event) => {
     homeAbbreviation: home?.team?.abbreviation ?? '',
     awayAbbreviation: away?.team?.abbreviation ?? '',
     score: homeScore === null || awayScore === null ? null : { home: homeScore, away: awayScore },
+    homeCorners: cornersFor(home),
+    awayCorners: cornersFor(away),
   };
 };
 

@@ -976,3 +976,198 @@ th {
   text-overflow:ellipsis;
   white-space:nowrap
 }
+
+/* 角球统计 */
+.cornerStats {
+  padding:14px 20px;
+  margin-bottom:12px
+}
+
+.cornerHeader {
+  display:flex;
+  align-items:baseline;
+  justify-content:space-between;
+  gap:12px;
+  flex-wrap:wrap;
+  margin-bottom:12px
+}
+
+.cornerHeader b {
+  font-size:14px;
+  color:#334155
+}
+
+.continentBars {
+  display:flex;
+  flex-direction:column;
+  gap:8px
+}
+
+.continentRow {
+  display:grid;
+  grid-template-columns:64px 1fr auto;
+  align-items:center;
+  gap:10px
+}
+
+.continentName {
+  font-size:13px;
+  color:#334155;
+  font-weight:600
+}
+
+.continentBarTrack {
+  background:#eef2f7;
+  border-radius:6px;
+  height:16px;
+  overflow:hidden
+}
+
+.continentBarFill {
+  height:100%;
+  border-radius:6px;
+  transition:width .3s ease
+}
+
+.continentValue {
+  font-size:12px;
+  color:#334155;
+  font-weight:600;
+  white-space:nowrap
+}
+
+.continentSub {
+  color:#94a3b8;
+  font-weight:400
+}
+
+.cornerTeamDetails {
+  margin-top:14px
+}
+
+.cornerTeamDetails summary {
+  cursor:pointer;
+  font-size:13px;
+  color:#475569
+}
+
+.cornerTeamGroups {
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(180px,1fr));
+  gap:14px;
+  margin-top:10px
+}
+
+.cornerTeamGroup h4 {
+  margin:0 0 6px;
+  font-size:13px
+}
+
+.cornerTeamGroup ul {
+  list-style:none;
+  margin:0;
+  padding:0;
+  display:flex;
+  flex-direction:column;
+  gap:3px
+}
+
+.cornerTeamGroup li {
+  display:grid;
+  grid-template-columns:1fr auto auto;
+  gap:8px;
+  font-size:12px;
+  color:#334155;
+  align-items:baseline
+}
+
+.cornerTeamNum {
+  font-weight:600
+}
+
+.cornerTeamAvg {
+  color:#94a3b8
+}
+
+/* 场均角球排行榜 */
+.cornerRanking {
+  margin-top:16px
+}
+
+.cornerRanking h4 {
+  margin:0 0 8px;
+  font-size:13px;
+  color:#334155
+}
+
+.cornerRanking ol {
+  list-style:none;
+  margin:0;
+  padding:0;
+  display:flex;
+  flex-direction:column;
+  gap:5px
+}
+
+.cornerRanking li {
+  display:grid;
+  grid-template-columns:22px 96px 1fr 40px;
+  align-items:center;
+  gap:8px
+}
+
+.rankIdx {
+  font-size:12px;
+  color:#94a3b8;
+  text-align:center;
+  font-weight:600
+}
+
+.rankTeam {
+  font-size:12px;
+  font-weight:600;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis
+}
+
+.rankBarTrack {
+  background:#eef2f7;
+  border-radius:5px;
+  height:12px;
+  overflow:hidden
+}
+
+.rankBarFill {
+  height:100%;
+  border-radius:5px
+}
+
+.rankAvg {
+  font-size:12px;
+  font-weight:600;
+  color:#334155;
+  text-align:right
+}
+
+/* 命中分歧行高亮 + 赔率价值标 */
+tr.claudeOnlyHit td.frozen,
+tr.claudeOnlyHit td:first-child {
+  box-shadow:inset 4px 0 0 #6366f1
+}
+
+tr.gptOnlyHit td.frozen,
+tr.gptOnlyHit td:first-child {
+  box-shadow:inset 4px 0 0 #f97316
+}
+
+.valueTag {
+  display:inline-block;
+  margin-left:4px;
+  padding:0 5px;
+  border-radius:6px;
+  background:#fef3c7;
+  color:#b45309;
+  font-size:11px;
+  font-weight:600
+}

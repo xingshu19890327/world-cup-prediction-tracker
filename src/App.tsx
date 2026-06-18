@@ -10,6 +10,8 @@ import ImportExportPanel, { DataManagementPanel } from './components/ImportExpor
 import MatchTable from './components/MatchTable';
 import MatchEditor from './components/MatchEditor';
 import InfoPanel from './components/InfoPanel';
+import TrendChart from './components/TrendChart';
+import CornerStats from './components/CornerStats';
 const defaultFilters: FiltersState = { round:'全部', group:'全部', completion:'全部', hit:'全部', team:'', city:'', quick:'全部' };
 const blankValueLabel = '空白';
 const columnFilterValue = (value: unknown) => String(value ?? '').trim() || blankValueLabel;
@@ -66,13 +68,15 @@ export default function App(){
       const now = new Date().toLocaleString('zh-CN', { hour12: false });
       setLastResultsUpdate(now);
       console.debug('ESPN 赛果更新诊断', stats);
-      const match18Diagnostic = stats.focusDiagnostics.find((diagnostic) => diagnostic.matchNo === 18);
-      const match18Message = match18Diagnostic && match18Diagnostic.reason !== '已更新'
-        ? `matchNo 18 伊拉克 vs 挪威：${match18Diagnostic.reason.replace('ESPN 返回该比赛但状态未完赛', '未完赛').replace('ESPN 返回但状态未完赛', '未完赛').replace('ESPN 返回比分无效', '比分无效').replace('ESPN 未返回该比赛', 'ESPN 未返回')}。`
+      const failMsg = stats.matchFailureSamples.length
+        ? `  ⚠️ 以下 ${stats.matchFailureSamples.length} 场未能自动匹配（可手动填写）：${stats.matchFailureSamples.map(s => `#${s.matchNo} ${s.homeTeam} vs ${s.awayTeam}`).join('、')}`
         : '';
-      setMessage(`${stats.updatedMatches.length
-        ? `本次更新：${stats.updatedMatches.map((match) => `${match.matchNo} ${match.label} ${match.score}`).join('；')}。`
-        : '无新场次更新。'}${match18Message}`);
+      setMessage(
+        (stats.updatedMatches.length
+          ? `本次更新：${stats.updatedMatches.map((match) => `${match.matchNo} ${match.label} ${match.score}`).join('；')}。`
+          : '无新场次更新。')
+        + failMsg
+      );
     } catch (error) {
       console.debug('ESPN 赛果更新诊断', { error, espnReturned: 0, espnCompleted: 0, espnUnfinished: 0, updated: 0, espnMissing: matches.length, matchFailed: 0 });
       setMessage(`ESPN 赛果数据源失败：${error instanceof Error ? error.message : '未知错误'}。`);
@@ -114,6 +118,8 @@ export default function App(){
     <div className="shell">
       <TopNav/>
       <DashboardCards matches={matches}/>
+      <TrendChart matches={matches}/>
+      <CornerStats matches={matches}/>
       {message && <div className="msg">{message}</div>}
       <ImportExportPanel
         onRecalc={() => setAndSave(matches.map(recalculateMatch))}

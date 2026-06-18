@@ -11,6 +11,8 @@ type SourceResult = {
   homeAbbreviation?: string;
   awayAbbreviation?: string;
   score?: { home: number; away: number } | null;
+  homeCorners?: number | null;
+  awayCorners?: number | null;
 };
 
 type MatchDirection = 'normal' | 'reversed';
@@ -58,6 +60,17 @@ const aliasEntries: [string, string][] = [
   ['克罗地亚', 'croatia'], ['日本', 'japan'], ['荷兰', 'netherlands'], ['新西兰', 'newzealand'], ['new zealand', 'newzealand'], ['nzl', 'newzealand'],
   ['埃及', 'egypt'], ['比利时', 'belgium'], ['牙买加', 'jamaica'], ['哥伦比亚', 'colombia'], ['尼日利亚', 'nigeria'],
   ['乌拉圭', 'uruguay'], ['约旦', 'jordan'], ['塞内加尔', 'senegal'], ['葡萄牙', 'portugal'], ['乌兹别克斯坦', 'uzbekistan'], ['阿尔及利亚', 'algeria'],
+  // 补全缺失的中文→ESPN英文映射（compactTeam 会清除中文字符，必须显式 alias）
+  ['伊拉克', 'iraq'], ['iraq', 'iraq'],
+  ['巴拿马', 'panama'], ['panama', 'panama'],
+  ['刚果', 'congo'],
+  ['congo', 'congo'], ['republic of congo', 'congo'], ['congo brazzaville', 'congo'],
+  ['congo republic', 'congo'], ['republicofcongo', 'congo'], ['congo-brazzaville', 'congo'],
+  ['rep. congo', 'congo'], ['rep congo', 'congo'], ['cgo', 'congo'], ['rco', 'congo'], ['con', 'congo'],
+  // 同时把刚果民主共和国(DR Congo)的各种写法也归到同一支"刚果"，避免 ESPN 用哪种都匹配失败
+  ['dr congo', 'congo'], ['drcongo', 'congo'], ['congo dr', 'congo'], ['congodr', 'congo'],
+  ['dr. congo', 'congo'], ['democratic republic of congo', 'congo'], ['drc', 'congo'],
+  ['cod', 'congo'], ['congo kinshasa', 'congo'], ['congo-kinshasa', 'congo'],
 ];
 const teamAliases = Object.fromEntries(aliasEntries.map(([key, value]) => [key.toLowerCase(), value]));
 
@@ -166,8 +179,19 @@ export const applyEspnResults = (rows: MatchPrediction[], results: SourceResult[
     const homeScore = found.direction === 'normal' ? result.score.home : result.score.away;
     const awayScore = found.direction === 'normal' ? result.score.away : result.score.home;
     const nextScore = `${homeScore}-${awayScore}`;
-    nextRows[found.index] = recalculateMatch({ ...current, actualScore: nextScore });
-    if (current.actualScore.trim() === nextScore) continue;
+
+    // 角球：按主客方向映射，仅在本地尚未填写时写入，避免覆盖手动数据
+    const srcHomeCorners = found.direction === 'normal' ? result.homeCorners : result.awayCorners;
+    const srcAwayCorners = found.direction === 'normal' ? result.awayCorners : result.homeCorners;
+    const cornerPatch: Partial<MatchPrediction> = {};
+    if (Number.isFinite(srcHomeCorners) && String(current.homeCorners ?? '').trim() === '') cornerPatch.homeCorners = srcHomeCorners as number;
+    if (Number.isFinite(srcAwayCorners) && String(current.awayCorners ?? '').trim() === '') cornerPatch.awayCorners = srcAwayCorners as number;
+
+    if (current.actualScore.trim() === nextScore) {
+      if (Object.keys(cornerPatch).length) nextRows[found.index] = recalculateMatch({ ...current, ...cornerPatch });
+      continue;
+    }
+    nextRows[found.index] = recalculateMatch({ ...current, actualScore: nextScore, ...cornerPatch });
     stats.updated += 1;
     stats.updatedMatches.push({ matchNo: current.matchNo, label: `${current.homeTeam} vs ${current.awayTeam}`, score: nextScore });
   }
