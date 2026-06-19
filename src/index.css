@@ -1171,3 +1171,155 @@ tr.gptOnlyHit td:first-child {
   font-size:11px;
   font-weight:600
 }
+
+/* Corner Prediction Table */
+.cornerPredPanel {
+  padding:18px 20px 14px;
+  margin-top:14px;
+  overflow:hidden
+}
+
+.cornerPredHeader {
+  display:flex;
+  align-items:center;
+  gap:16px;
+  flex-wrap:wrap;
+  margin-bottom:12px
+}
+
+.cornerPredStats {
+  display:flex;
+  gap:12px;
+  flex-wrap:wrap;
+  flex:1
+}
+
+.cpStatClaude {
+  font-size:12px;
+  color:#4f46e5;
+  font-weight:600;
+  background:#eef2ff;
+  padding:3px 8px;
+  border-radius:6px
+}
+
+.cpStatGpt {
+  font-size:12px;
+  color:#ea580c;
+  font-weight:600;
+  background:#fff7ed;
+  padding:3px 8px;
+  border-radius:6px
+}
+
+.cornerPredFilters {
+  display:flex;
+  gap:6px
+}
+
+.cornerPredTable {
+  width:100%;
+  border-collapse:collapse;
+  font-size:13px
+}
+
+.cornerPredTable th {
+  background:#f1f5f9;
+  color:#475569;
+  font-weight:600;
+  padding:7px 10px;
+  text-align:left;
+  white-space:nowrap;
+  border-bottom:2px solid #e2e8f0
+}
+
+.cornerPredTable td {
+  padding:6px 10px;
+  border-bottom:1px solid #f1f5f9;
+  vertical-align:middle
+}
+
+.cpRow:hover {
+  background:#f8fafc
+}
+
+.cpRow.cpDone {
+  background:#fafffe
+}
+
+.cpNo {
+  color:#94a3b8;
+  font-size:11px;
+  font-weight:600;
+  width:30px
+}
+
+.cpMatch {
+  font-weight:500;
+  min-width:160px
+}
+
+.cpVs {
+  color:#94a3b8;
+  margin:0 4px;
+  font-size:11px
+}
+
+.cpTime {
+  color:#64748b;
+  font-size:11px;
+  white-space:nowrap
+}
+
+.cpCorners {
+  font-weight:600;
+  color:#1e293b;
+  white-space:nowrap
+}
+
+.cpHome { color:#4f46e5 }
+.cpAway { color:#ea580c }
+.cpTotal { color:#94a3b8; font-size:11px; font-weight:400 }
+.cpNone { color:#cbd5e1 }
+
+.cpActual {
+  font-weight:600;
+  color:#0f766e
+}
+
+.cpPred select, .cpTotalInput {
+  padding:3px 6px;
+  border:1px solid #e2e8f0;
+  border-radius:6px;
+  font-size:12px;
+  background:#fff;
+  color:#1e293b;
+  cursor:pointer
+}
+
+.cpTotalInput {
+  width:64px;
+  cursor:text
+}
+
+.cpPred select:focus, .cpTotalInput:focus {
+  outline:none;
+  border-color:#6366f1
+}
+
+.cpHit {
+  font-weight:700;
+  font-size:14px;
+  text-align:center
+}
+
+.cpHitY { color:#16a34a }
+.cpHitN { color:#dc2626 }
+.cpHitP { color:#64748b; font-size:11px; font-weight:500 }
+
+.cornerPredTip {
+  font-size:11px;
+  color:#94a3b8;
+  margin:8px 0 0;
+  text-align:center
+}

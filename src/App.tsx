@@ -12,6 +12,7 @@ import MatchEditor from './components/MatchEditor';
 import InfoPanel from './components/InfoPanel';
 import TrendChart from './components/TrendChart';
 import CornerStats from './components/CornerStats';
+import CornerPredictionTable from './components/CornerPredictionTable';
 const defaultFilters: FiltersState = { round:'全部', group:'全部', completion:'全部', hit:'全部', team:'', city:'', quick:'全部' };
 const blankValueLabel = '空白';
 const columnFilterValue = (value: unknown) => String(value ?? '').trim() || blankValueLabel;
@@ -137,6 +138,11 @@ export default function App(){
         onClearAll={clearAllFilters}
       />
       <MatchTable matches={visible} allMatches={matches} columnFilters={columnFilters} onColumnFiltersChange={updateColumnFilters} onOpen={setEditing}/>
+      <CornerPredictionTable
+        matches={matches}
+        onEdit={setEditing}
+        onSave={(updated) => setAndSave(matches.map((m) => m.id === updated.id ? updated : m))}
+      />
       <InfoPanel/>
       <DataManagementPanel
         matches={matches}

@@ -17,6 +17,12 @@ export type MatchPrediction = {
   completionStatus: CompletionStatus;
   homeCorners: string | number;
   awayCorners: string | number;
+  claudeCornerWinner: string;
+  claudeCornerTotal: string;
+  chatgptCornerWinner: string;
+  chatgptCornerTotal: string;
+  claudeCornerHit: HitStatus;
+  chatgptCornerHit: HitStatus;
   claudePredictedScore1: string;
   claudePredictedScore2: string;
   claudePredictedScore3: string;
