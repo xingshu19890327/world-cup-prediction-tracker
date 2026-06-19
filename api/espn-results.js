@@ -1,5 +1,6 @@
-const baseEndpoint = 'https://site.api.espn.com/apis/site/v2/sports/soccer/fifa.world/scoreboard';
-const summaryEndpoint = 'https://site.api.espn.com/apis/site/v2/sports/soccer/fifa.world/summary';
+const FOOTBALL_API_BASE = 'https://v3.football.api-sports.io';
+const WORLD_CUP_LEAGUE = 1;
+const WORLD_CUP_SEASON = 2026;
 
 const send = (res, statusCode, body) => {
   res.statusCode = statusCode;
@@ -8,106 +9,84 @@ const send = (res, statusCode, body) => {
 };
 
 const toNumber = (value) => {
-  const number = Number(value);
-  return Number.isFinite(number) ? number : null;
+  const n = Number(value);
+  return Number.isFinite(n) ? n : null;
 };
 
-const isCornerStat = (stat) => {
-  const name = String(stat?.name ?? '').toLowerCase();
-  const abbr = String(stat?.abbreviation ?? '').toLowerCase();
-  const label = String(stat?.label ?? '').toLowerCase();
-  const display = String(stat?.displayName ?? '').toLowerCase();
-  return name.includes('corner') || label.includes('corner') || display.includes('corner') || abbr === 'ck' || abbr === 'cor';
+const apiFetch = async (path, apiKey) => {
+  const response = await fetch(`${FOOTBALL_API_BASE}${path}`, {
+    headers: { 'x-apisports-key': apiKey, Accept: 'application/json' },
+  });
+  if (!response.ok) throw new Error(`API-Football ${response.status}: ${response.statusText}`);
+  return response.json();
 };
 
-// 从 scoreboard 的 competitor.statistics 里直接找角球（通常为空，作兜底）
-const cornersFor = (competitor) => {
-  const stats = Array.isArray(competitor?.statistics) ? competitor.statistics : [];
-  const found = stats.find(isCornerStat);
-  return found ? toNumber(found.displayValue ?? found.value) : null;
+const cornersFromStats = (statsArray, homeAway) => {
+  const team = statsArray.find((t) => String(t?.team?.homeAway ?? t?.homeAway ?? '').toLowerCase() === homeAway);
+  if (!team) return null;
+  const stats = Array.isArray(team.statistics) ? team.statistics : [];
+  const found = stats.find((s) => String(s?.type ?? '').toLowerCase().includes('corner'));
+  return found ? toNumber(found.value) : null;
 };
 
-// 比赛详情接口（summary）里的 boxscore.teams[].statistics 才有角球
-const fetchCornersFromSummary = async (eventId) => {
-  if (!eventId) return { home: null, away: null };
-  try {
-    const response = await fetch(`${summaryEndpoint}?event=${encodeURIComponent(eventId)}`, { headers: { Accept: 'application/json' } });
-    if (!response.ok) return { home: null, away: null };
-    const data = await response.json();
-    const teams = Array.isArray(data?.boxscore?.teams) ? data.boxscore.teams : [];
-    const cornersOf = (homeAway) => {
-      const team = teams.find((t) => String(t?.homeAway ?? '').toLowerCase() === homeAway);
-      const stats = Array.isArray(team?.statistics) ? team.statistics : [];
-      const found = stats.find(isCornerStat);
-      return found ? toNumber(found.displayValue ?? found.value) : null;
-    };
-    let home = cornersOf('home');
-    let away = cornersOf('away');
-    // 兜底：boxscore 没标 homeAway 时按数组顺序取
-    if (home === null && away === null && teams.length >= 2) {
-      const cornersAt = (idx) => {
-        const stats = Array.isArray(teams[idx]?.statistics) ? teams[idx].statistics : [];
-        const found = stats.find(isCornerStat);
-        return found ? toNumber(found.displayValue ?? found.value) : null;
-      };
-      home = cornersAt(0);
-      away = cornersAt(1);
-    }
-    return { home, away };
-  } catch {
-    return { home: null, away: null };
-  }
-};
-
-const parseEvent = (event) => {
-  const competition = Array.isArray(event?.competitions) ? event.competitions[0] : null;
-  const competitors = Array.isArray(competition?.competitors) ? competition.competitors : [];
-  const home = competitors.find((competitor) => competitor?.homeAway === 'home') ?? competitors[0];
-  const away = competitors.find((competitor) => competitor?.homeAway === 'away') ?? competitors[1];
-  const homeScore = toNumber(home?.score);
-  const awayScore = toNumber(away?.score);
-
+const parseFixture = (f) => {
+  const homeScore = toNumber(f?.goals?.home);
+  const awayScore = toNumber(f?.goals?.away);
+  const statusShort = f?.fixture?.status?.short ?? '';
+  const completed = ['FT', 'AET', 'PEN'].includes(statusShort);
   return {
-    id: event?.id,
-    utcDate: event?.date ?? competition?.date ?? '',
-    completed: Boolean(event?.status?.type?.completed ?? competition?.status?.type?.completed),
-    status: event?.status?.type?.description ?? event?.status?.type?.name ?? '',
-    homeTeam: home?.team?.displayName ?? home?.team?.name ?? home?.team?.shortDisplayName ?? '',
-    awayTeam: away?.team?.displayName ?? away?.team?.name ?? away?.team?.shortDisplayName ?? '',
-    homeAbbreviation: home?.team?.abbreviation ?? '',
-    awayAbbreviation: away?.team?.abbreviation ?? '',
+    id: String(f?.fixture?.id ?? ''),
+    utcDate: f?.fixture?.date ?? '',
+    completed,
+    status: f?.fixture?.status?.long ?? statusShort,
+    homeTeam: f?.teams?.home?.name ?? '',
+    awayTeam: f?.teams?.away?.name ?? '',
+    homeAbbreviation: '',
+    awayAbbreviation: '',
     score: homeScore === null || awayScore === null ? null : { home: homeScore, away: awayScore },
-    homeCorners: cornersFor(home),
-    awayCorners: cornersFor(away),
+    homeCorners: null,
+    awayCorners: null,
   };
 };
 
 module.exports = async function handler(req, res) {
-  const dates = typeof req.query?.dates === 'string' ? req.query.dates.trim() : '';
-  const endpoint = dates ? `${baseEndpoint}?dates=${encodeURIComponent(dates)}` : baseEndpoint;
+  const apiKey = process.env.API_FOOTBALL_KEY;
+  if (!apiKey) return send(res, 500, { error: 'config_missing', message: '服务器未配置 API_FOOTBALL_KEY 环境变量。' });
 
   try {
-    const response = await fetch(endpoint, { headers: { Accept: 'application/json' } });
-    if (!response.ok) return send(res, response.status, { error: 'source_unavailable', message: 'ESPN 数据源暂时不可用，请稍后重试或手动填写。' });
+    const data = await apiFetch(`/fixtures?league=${WORLD_CUP_LEAGUE}&season=${WORLD_CUP_SEASON}`, apiKey);
+    const fixtures = Array.isArray(data?.response) ? data.response : [];
+    const matches = fixtures
+      .map(parseFixture)
+      .filter((m) => m.homeTeam && m.awayTeam);
 
-    const data = await response.json();
-    const events = Array.isArray(data?.events) ? data.events : [];
-    const matches = events.map(parseEvent).filter((match) => match.homeTeam && match.awayTeam);
-
-    // 对已完赛但 scoreboard 没带角球的比赛，逐场拉详情接口补角球
-    await Promise.all(matches.map(async (match) => {
-      if (match.completed && match.homeCorners === null && match.awayCorners === null) {
-        const corners = await fetchCornersFromSummary(match.id);
-        match.homeCorners = corners.home;
-        match.awayCorners = corners.away;
+    // 对已完赛的比赛并发拉取角球统计
+    const completed = matches.filter((m) => m.completed);
+    await Promise.all(completed.map(async (match) => {
+      try {
+        const statsData = await apiFetch(`/fixtures/statistics?fixture=${match.id}`, apiKey);
+        const statsArray = Array.isArray(statsData?.response) ? statsData.response : [];
+        // API-Football statistics 返回 [{team:{id,name}, statistics:[...]}, ...]
+        // homeAway 字段不在 statistics 里，需要对比队名和 fixture 里的主客信息
+        // 用顺序：第一个是主队，第二个是客队（API-Football 惯例）
+        if (statsArray.length >= 2) {
+          const findCorners = (teamStats) => {
+            const stats = Array.isArray(teamStats?.statistics) ? teamStats.statistics : [];
+            const found = stats.find((s) => String(s?.type ?? '').toLowerCase().includes('corner'));
+            return found ? toNumber(found.value) : null;
+          };
+          match.homeCorners = findCorners(statsArray[0]);
+          match.awayCorners = findCorners(statsArray[1]);
+        }
+      } catch {
+        // 单场统计失败不影响整体
       }
     }));
 
-    const completedCount = matches.filter((match) => match.completed).length;
+    const completedCount = completed.length;
     const unfinishedCount = matches.length - completedCount;
-
-    return send(res, 200, { matches, stats: { completedCount, unfinishedCount, sourceCount: matches.length, dates: dates || null } });
+    return send(res, 200, { matches, stats: { completedCount, unfinishedCount, sourceCount: matches.length, dates: null } });
   } catch (error) {
-    return send(res, 503, { error: 'source_unavailable', message: `ESPN 数据源暂时不可用：${error instanceof Error ? error.message : '未知错误'}` });
+    return send(res, 503, { error: 'source_unavailable', message: `赛果数据源失败：${error instanceof Error ? error.message : '未知错误'}` });
   }
 };
