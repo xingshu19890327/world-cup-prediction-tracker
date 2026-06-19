@@ -16,7 +16,7 @@ type SourceResult = {
 };
 
 type MatchDirection = 'normal' | 'reversed';
-type FocusReason = 'ESPN 未返回该比赛' | 'ESPN 返回但状态未完赛' | '球队匹配失败' | '日期校验失败' | 'ESPN 返回比分无效' | '已更新';
+type FocusReason = '数据源未返回该比赛' | '数据源返回但状态未完赛' | '球队匹配失败' | '日期校验失败' | '数据源返回比分无效' | '已更新';
 
 type MatchFailureSample = {
   matchNo: number;
@@ -51,25 +51,34 @@ const aliasEntries: [string, string][] = [
   ['瑞士', 'switzerland'], ['巴西', 'brazil'], ['摩洛哥', 'morocco'], ['苏格兰', 'scotland'], ['海地', 'haiti'],
   ['德国', 'germany'], ['库拉索', 'curacao'], ['法国', 'france'], ['挪威', 'norway'], ['norway', 'norway'], ['nor', 'norway'], ['卡塔尔', 'qatar'],
   ['加纳', 'ghana'], ['科特迪瓦', 'ivorycoast'], ['厄瓜多尔', 'ecuador'], ['澳大利亚', 'australia'],
-  ['伊朗', 'iran'], ['iran', 'iran'], ['ir iran', 'iran'], ['islamic republic of iran', 'iran'], ['irn', 'iran'],
+  ['伊朗', 'iran'], ['iran', 'iran'], ['ir iran', 'iran'], ['islamic republic of iran', 'iran'], ['iriran', 'iran'], ['irn', 'iran'],
   ['伊拉克', 'iraq'], ['iraq', 'iraq'], ['irq', 'iraq'],
   ['瑞典', 'sweden'], ['sweden', 'sweden'], ['swe', 'sweden'],
   ['突尼斯', 'tunisia'], ['tunisia', 'tunisia'], ['tun', 'tunisia'],
   ['西班牙', 'spain'], ['spain', 'spain'], ['esp', 'spain'],
   ['佛得角', 'capeverde'], ['cape verde', 'capeverde'], ['cabo verde', 'capeverde'], ['cape verde islands', 'capeverde'], ['cpv', 'capeverde'],
-  ['沙特', 'saudiarabia'], ['阿根廷', 'argentina'], ['奥地利', 'austria'], ['英格兰', 'england'],
-  ['克罗地亚', 'croatia'], ['日本', 'japan'], ['荷兰', 'netherlands'], ['新西兰', 'newzealand'], ['new zealand', 'newzealand'], ['nzl', 'newzealand'],
+  ['沙特', 'saudiarabia'], ['saudi arabia', 'saudiarabia'], ['saudiarabia', 'saudiarabia'],
+  ['阿根廷', 'argentina'], ['奥地利', 'austria'], ['英格兰', 'england'],
+  ['克罗地亚', 'croatia'], ['日本', 'japan'], ['荷兰', 'netherlands'],
+  ['新西兰', 'newzealand'], ['new zealand', 'newzealand'], ['nzl', 'newzealand'],
   ['埃及', 'egypt'], ['比利时', 'belgium'], ['牙买加', 'jamaica'], ['哥伦比亚', 'colombia'], ['尼日利亚', 'nigeria'],
-  ['乌拉圭', 'uruguay'], ['约旦', 'jordan'], ['塞内加尔', 'senegal'], ['葡萄牙', 'portugal'], ['乌兹别克斯坦', 'uzbekistan'], ['阿尔及利亚', 'algeria'],
-  // 补全缺失的中文→ESPN英文映射（compactTeam 会清除中文字符，必须显式 alias）
-  ['伊拉克', 'iraq'], ['iraq', 'iraq'],
+  ['乌拉圭', 'uruguay'], ['约旦', 'jordan'], ['塞内加尔', 'senegal'], ['葡萄牙', 'portugal'],
+  ['乌兹别克斯坦', 'uzbekistan'], ['阿尔及利亚', 'algeria'],
   ['巴拿马', 'panama'], ['panama', 'panama'],
+  // API-Football 特有命名
+  ['korea republic', 'korea'], ['south korea', 'korea'], ['republic of korea', 'korea'],
+  ['bosnia and herzegovina', 'bosniaherzegovina'], ['bosnia & herzegovina', 'bosniaherzegovina'],
+  ['bosniaandherzegovina', 'bosniaherzegovina'],
+  ['czechia', 'czechia'], ['czech republic', 'czechia'], ['czechrepublic', 'czechia'],
+  ['ivory coast', 'ivorycoast'], ["cote d'ivoire", 'ivorycoast'], ['côte divoire', 'ivorycoast'],
+  ['united states', 'unitedstates'], ['usa', 'unitedstates'], ['us', 'unitedstates'],
+  ['curacao', 'curacao'], ['curaçao', 'curacao'],
+  // 刚果各种写法
   ['刚果', 'congo'], ['刚果民主共和国', 'congo'], ['刚果（金）', 'congo'], ['刚果(金)', 'congo'],
   ['刚果共和国', 'congo'], ['刚果（布）', 'congo'], ['刚果(布)', 'congo'],
   ['congo', 'congo'], ['republic of congo', 'congo'], ['congo brazzaville', 'congo'],
   ['congo republic', 'congo'], ['republicofcongo', 'congo'], ['congo-brazzaville', 'congo'],
   ['rep. congo', 'congo'], ['rep congo', 'congo'], ['cgo', 'congo'], ['rco', 'congo'], ['con', 'congo'],
-  // 同时把刚果民主共和国(DR Congo)的各种写法也归到同一支"刚果"，避免 ESPN 用哪种都匹配失败
   ['dr congo', 'congo'], ['drcongo', 'congo'], ['congo dr', 'congo'], ['congodr', 'congo'],
   ['dr. congo', 'congo'], ['democratic republic of congo', 'congo'], ['drc', 'congo'],
   ['cod', 'congo'], ['congo kinshasa', 'congo'], ['congo-kinshasa', 'congo'],
@@ -131,14 +140,14 @@ const diagnoseMatch = (match: MatchPrediction, results: SourceResult[]): { reaso
   if (teamCandidates.length === 0) {
     return nearbyResults.length > 0
       ? { reason: '球队匹配失败', candidates: nearbyResults.slice(0, 3) }
-      : { reason: 'ESPN 未返回该比赛', candidates: closestCandidates(match, results) };
+      : { reason: '数据源未返回该比赛', candidates: closestCandidates(match, results) };
   }
   const dateCandidates = teamCandidates.filter((result) => sameDate(match, result));
   if (dateCandidates.length === 0) return { reason: '日期校验失败', candidates: teamCandidates.slice(0, 3) };
   const completed = dateCandidates.find((result) => result.completed);
-  if (!completed) return { reason: 'ESPN 返回但状态未完赛', candidates: dateCandidates.slice(0, 3) };
-  if (!completed.score || !Number.isFinite(completed.score.home) || !Number.isFinite(completed.score.away)) return { reason: 'ESPN 返回比分无效', candidates: [completed] };
-  return { reason: 'ESPN 未返回该比赛', candidates: [] };
+  if (!completed) return { reason: '数据源返回但状态未完赛', candidates: dateCandidates.slice(0, 3) };
+  if (!completed.score || !Number.isFinite(completed.score.home) || !Number.isFinite(completed.score.away)) return { reason: '数据源返回比分无效', candidates: [completed] };
+  return { reason: '数据源未返回该比赛', candidates: [] };
 };
 
 const closestCandidates = (match: MatchPrediction, results: SourceResult[]) => {

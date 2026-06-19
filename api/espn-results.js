@@ -85,7 +85,8 @@ module.exports = async function handler(req, res) {
 
     const completedCount = completed.length;
     const unfinishedCount = matches.length - completedCount;
-    return send(res, 200, { matches, stats: { completedCount, unfinishedCount, sourceCount: matches.length, dates: null } });
+    const sampleTeams = matches.slice(0, 5).map((m) => `${m.homeTeam} vs ${m.awayTeam}`);
+    return send(res, 200, { matches, stats: { completedCount, unfinishedCount, sourceCount: matches.length, dates: null, debug: { sampleTeams } } });
   } catch (error) {
     return send(res, 503, { error: 'source_unavailable', message: `赛果数据源失败：${error instanceof Error ? error.message : '未知错误'}` });
   }
