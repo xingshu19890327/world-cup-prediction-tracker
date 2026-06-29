@@ -1,37 +1,28 @@
-# 2026 世界杯 ChatGPT vs Claude 预测对比 Tracker
+# 世界杯 2026 · 对阵生成器
 
-V4 clean rebuild：一个本地优先的 Excel 风格网页 tracker，用于对比 Claude 和 ChatGPT 的 2026 世界杯预测。
+一个单文件、可离线使用的 2026 世界杯淘汰赛对阵生成器。打开 `index.html` 即可使用，无需安装任何东西。
 
-## 数据来源
+## 功能
+- 12 个小组各一种配色，球队晋级后在淘汰赛格子里保留“出身组”颜色，一路可追溯。
+- 小组选名次 → 32 强自动填位；点已定球队 = 判它晋级，胜者自动进下一轮直到捧杯。
+- 每场可填 1 个实际比分 + 3 个预测比分；**预测命中实际比分时自动显示绿色对勾**。
+- 真实国旗（内嵌，离线/Windows 均可显示），大小随字号缩放。
+- 底部工具栏：缩放（−/适配/+）、字号（A−/A+，11–18px）、展开/收起比分、居中视角、存档、退回（支持 Ctrl+Z / Ctrl+S）。
+- 已内置真实的小组赛最终排名与 8 个最佳第三名对阵。
 
-本版使用用户上传的 `世界杯2026_整合对比表` 图片和 `reference/seedMatches.from_excel.json` 作为小组赛基准数据参考。`src/data/seedMatches.ts` 保留完整 104 场结构：1–72 为小组赛基准行，73–104 为淘汰赛占位行。
+## 本地使用
+直接双击 `index.html` 用浏览器打开即可。数据通过浏览器本地存储（localStorage）保存。
 
-## 核心能力
+## 发布到网上
+它是纯静态单文件，任选其一：
 
-- Excel 阅读模式主表：基础内容区 / Claude 区 / ChatGPT 区 / 补充区。
-- 点击行打开右侧编辑器，修改比分、预测、赔率、备注、赔率来源、复盘等字段。
-- `localStorage` 本地保存，支持导入 JSON、导出 JSON、一键备份 JSON、导出 CSV、重置为 Excel 基准数据。
-- 手动点击“更新结果 / 重新计算”后，重新计算实际胜负、命中状态、预测分歧和高赔率标签。
-- 手动点击“更新实际赛果”时，前端会调用 `/api/results`，尝试从 football-data.org 抓取已完赛比分并写入尚未填写实际比分的本地比赛。
-- 支持轮次、组、完赛状态、命中状态、球队、城市、快捷筛选和清空全部筛选。
-- Dashboard 显示记录数、完赛数、双方赛果/比分命中率、当前领先和重点关注比赛数。
+| 方式 | 操作 |
+|---|---|
+| Cloudflare Pages / Netlify Drop | 把 `index.html` 拖进网页，几十秒出网址 |
+| GitHub Pages | 新建仓库放入文件 → Settings → Pages 开启 |
+| Claude Code | 在本文件夹运行 `claude`，说“把 index.html 发布到 GitHub Pages” |
 
-## football-data.org 实际赛果更新
+> 注意：“存档”按浏览器+域名隔离，每个访客的存档只在自己设备上，不跨设备同步、互不可见。需要多人共享需另加后端。
 
-- 需要在 Vercel 环境变量中配置 `FOOTBALL_DATA_TOKEN`。
-- 实际赛果不是实时同步；系统不会后台轮询，也不会自动刷新页面。
-- 只有用户点击“更新实际赛果”按钮时，才会请求一次 football-data.org。
-- 已有 `actualScore` 的比赛默认不会被覆盖，会计入“已有比分跳过”。
-- 如果 football-data.org 尚未开放 2026 World Cup 数据，或 token/权限不可用，用户仍可手动填写实际比分或导入 JSON 作为 fallback。
-
-## 不包含
-
-本版不包含后台轮询、登录或数据库。
-
-## 开发命令
-
-```bash
-npm run validate:seed
-npm run validate:reference
-npm run build
-```
+## 维护
+真实小组排名写在 `index.html` 的 `REAL_RANK` / `REAL_THIRD` 常量里；修改后把 `DATA_VERSION` 加 1，旧存档会自动迁移并保留用户填的比分与晋级。
