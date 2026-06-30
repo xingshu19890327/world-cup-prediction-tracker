@@ -340,7 +340,7 @@
 </div>
 
 <div class="legend">
-  <b>怎么用：</b>每个小组三个下拉=你选的第1/第2/第3名 → 它们会自动出现在淘汰赛对应格子里。带蓝框下拉的格子是<b>最佳第3名</b>位。点一支<b>已定球队</b>=判它晋级，胜者自动进下一轮直到捧杯。每场底部"<b>实</b>"填事实比分（金色），"<b>预1/预2/预3</b>"填三个预测比分。<br>
+  <b>怎么用：</b>每个小组三个下拉=你选的第1/第2/第3名 → 它们会自动出现在淘汰赛对应格子里。带蓝框下拉的格子是<b>最佳第3名</b>位。点一支<b>已定球队</b>=判它晋级，胜者自动进下一轮直到捧杯。每场底部"<b>实</b>"填事实比分（金色），"<b>预1/预2/预3</b>"填三个预测比分，"<b>冷</b>"填你看好的冷门比分。<br>
   <b>配色：</b>12 个小组各一种颜色，球队晋级后在淘汰赛格子里保留<b>出身组色</b>的左侧色条，方便一路追溯。
   <span class="k" style="background:var(--slot-filled);border-left:3px solid #888"></span>已定格 ·
   <span class="k" style="background:var(--slot-empty);border:1px dashed #2a3550"></span>空白格 ·
@@ -392,7 +392,7 @@ const GC={A:'#e5484d',B:'#f2750a',C:'#f5b800',D:'#88c425',E:'#30a46c',F:'#12a594
           G:'#00a2c7',H:'#3e9bf0',I:'#5b6ef0',J:'#7c5cf0',K:'#b14be0',L:'#e93d82'};
 const gc=(team)=>team?(GC[T2G[team]]||'#36456a'):'#34405c';
 
-// 比分：SCORE[m]={ac:[h,a],p1:[h,a],p2:[h,a],p3:[h,a]}
+// 比分：SCORE[m]={ac:[h,a],p1:[h,a],p2:[h,a],p3:[h,a],p4:[h,a]}  // p4=冷门预测
 let SCORE={};
 function sc(m,k){return (SCORE[m]&&SCORE[m][k])||['',''];}
 let OPEN=new Set();          // 展开了比分面板的场次
@@ -521,7 +521,7 @@ function predHit(m,key){
   return a[0]===p[0] && a[1]===p[1];
 }
 function refreshHits(m){
-  ['p1','p2','p3'].forEach(key=>{
+  ['p1','p2','p3','p4'].forEach(key=>{
     const el=document.querySelector(`.shit[data-hit="${m}-${key}"]`);
     if(el)el.classList.toggle('on',predHit(m,key));
   });
@@ -550,10 +550,11 @@ function scorePanel(m){
     +scoreRow(m,'p1','预1','pred')
     +scoreRow(m,'p2','预2','pred')
     +scoreRow(m,'p3','预3','pred')
+    +scoreRow(m,'p4','冷','pred')
     +`</div></div>`;
 }
 function hasScore(m){const s=SCORE[m];if(!s)return false;
-  return ['ac','p1','p2','p3'].some(k=>s[k]&&(s[k][0]!==''||s[k][1]!==''));}
+  return ['ac','p1','p2','p3','p4'].some(k=>s[k]&&(s[k][0]!==''||s[k][1]!==''));}
 function matchHTML(m){
   return `<div class="m"><div class="mn">MATCH ${m}${DEF[m].city?' · '+DEF[m].city:''}</div>${slotHTML(m,'a')}${slotHTML(m,'b')}${scorePanel(m)}</div>`;
 }
